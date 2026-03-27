@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import type { ResidentPublic } from "@/lib/schemas/resident";
 
 interface ResidentCardProps {
   resident: ResidentPublic;
+  /** Start collapsed (used in form step) */
   compact?: boolean;
 }
 
@@ -56,7 +58,7 @@ function InfoRow({
 }) {
   if (!value) return null;
   return (
-    <div className="flex items-start gap-2.5 py-2">
+    <div className="flex items-start gap-2.5 py-2.5">
       <div className="mt-0.5 text-tepuy-400 shrink-0">{icon}</div>
       <div className="flex flex-col gap-0.5 min-w-0">
         <span className="text-[11px] font-medium text-tepuy-400 uppercase tracking-wider">
@@ -71,30 +73,64 @@ function InfoRow({
 }
 
 export function ResidentCard({ resident, compact }: ResidentCardProps) {
+  const [isExpanded, setIsExpanded] = useState(!compact);
+
   const displayName =
     resident.nombre_usuario || `Apto ${resident.nro_apto || "—"}`;
 
   return (
     <div className="glass-card rounded-2xl overflow-hidden">
-      {/* Header with accent stripe */}
-      <div className="px-5 py-3.5" style={{ background: "linear-gradient(to right, oklch(0.58 0.14 170), oklch(0.68 0.14 170))" }}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-bold text-white">{displayName}</h3>
-            <p className="text-tepuy-100 text-xs font-medium mt-0.5">
-              CI: {resident.ci_usuario}
-            </p>
-          </div>
+      {/* Header — clickable to toggle */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded((prev) => !prev)}
+        className="w-full px-5 py-3.5 flex items-center justify-between cursor-pointer"
+        style={{
+          background:
+            "linear-gradient(to right, oklch(0.58 0.14 170), oklch(0.68 0.14 170))",
+        }}
+      >
+        <div className="text-left">
+          <h3 className="text-base font-bold text-white">{displayName}</h3>
+          <p className="text-tepuy-100 text-xs font-medium mt-0.5">
+            CI: {resident.ci_usuario}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1">
             <div className="h-1.5 w-1.5 rounded-full bg-green-300 animate-pulse" />
-            <span className="text-[11px] font-semibold text-white">Activo</span>
+            <span className="text-[11px] font-semibold text-white">
+              Activo
+            </span>
           </div>
-        </div>
-      </div>
 
-      {/* Details */}
-      {!compact && (
-        <div className="px-5 py-2 divide-y divide-tepuy-100/60">
+          {/* Chevron */}
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`transition-transform duration-300 ${
+              isExpanded ? "rotate-180" : "rotate-0"
+            }`}
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+      </button>
+
+      {/* Expandable details */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isExpanded ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="px-5 py-1 divide-y divide-tepuy-100/60">
           <InfoRow
             icon={FIELD_ICONS.inmueble}
             label="Inmueble"
@@ -120,6 +156,22 @@ export function ResidentCard({ resident, compact }: ResidentCardProps) {
             label="Teléfono"
             value={resident.tlf_usuario}
           />
+        </div>
+
+        {/* Collapse hint */}
+        <div className="px-5 pb-3 pt-1">
+          <p className="text-[10px] text-center text-tepuy-300">
+            Toca para ocultar detalles
+          </p>
+        </div>
+      </div>
+
+      {/* Expand hint when collapsed */}
+      {!isExpanded && (
+        <div className="px-5 py-2">
+          <p className="text-[10px] text-center text-tepuy-300">
+            Toca para ver detalles de tu vivienda
+          </p>
         </div>
       )}
     </div>
