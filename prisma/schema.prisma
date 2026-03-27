@@ -1,0 +1,130 @@
+// ─────────────────────────────────────────────
+// TEPUY Web App — Prisma Schema
+// Sincronizado con Supabase (project: opsywnwefweglnmziwdo)
+// ─────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum ResidentStatus {
+  active
+  inactive
+
+  @@map("resident_status")
+}
+
+enum WorkAreaType {
+  plomeria
+  electricidad
+  pintura
+  carpinteria
+  cerrajeria
+  aire_acondicionado
+  albanileria
+  impermeabilizacion
+  vidrieria
+  limpieza
+  jardineria
+  otro
+
+  @@map("work_area_type")
+}
+
+enum WebhookStatusType {
+  pending
+  sent
+  failed
+
+  @@map("webhook_status_type")
+}
+
+// ─────────────────────────────────────────────
+// TABLE: residents
+// ─────────────────────────────────────────────
+
+model Resident {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ciUsuario             String    @unique @map("ci_usuario") @db.VarChar(20)
+  nombreUsuario         String?   @map("nombre_usuario") @db.VarChar(255)
+  tlfUsuario            String?   @map("tlf_usuario") @db.VarChar(50)
+  status                ResidentStatus @default(active)
+  descripcionInmueble   String?   @map("descripcion_inmueble") @db.VarChar(255)
+  nroApto               String?   @map("nro_apto") @db.VarChar(20)
+  fase                  String?   @db.VarChar(100)
+  gerencia              String?   @db.VarChar(100)
+  nombrePropietario     String?   @map("nombre_propietario") @db.VarChar(255)
+  ciPropietario         String?   @map("ci_propietario") @db.VarChar(20)
+  emailPropietario      String?   @map("email_propietario") @db.VarChar(255)
+  tlfPropietario        String?   @map("tlf_propietario") @db.VarChar(50)
+  fechaInicioContrato   DateTime? @map("fecha_inicio_contrato") @db.Date
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  maintenanceRequests   MaintenanceRequest[]
+
+  @@index([descripcionInmueble], map: "idx_residents_descripcion_inmueble")
+  @@index([status], map: "idx_residents_status")
+  @@map("residents")
+}
+
+// ─────────────────────────────────────────────
+// TABLE: maintenance_requests
+// ─────────────────────────────────────────────
+
+model MaintenanceRequest {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  residentId            String    @map("resident_id") @db.Uuid
+  // Campos desnormalizados — webhook payload + integridad histórica
+  ciUsuario             String    @map("ci_usuario") @db.VarChar(20)
+  nombreUsuario         String?   @map("nombre_usuario") @db.VarChar(255)
+  descripcionInmueble   String?   @map("descripcion_inmueble") @db.VarChar(255)
+  nroApto               String?   @map("nro_apto") @db.VarChar(20)
+  tlfUsuario            String?   @map("tlf_usuario") @db.VarChar(50)
+  gerencia              String?   @db.VarChar(100)
+  // Datos de la solicitud
+  workArea              WorkAreaType @map("work_area")
+  description           String    @db.Text
+  preferredTime         String?   @map("preferred_time") @db.VarChar(255)
+  accessNotes           String?   @map("access_notes") @db.Text
+  // Webhook lifecycle
+  webhookStatus         WebhookStatusType @default(pending) @map("webhook_status")
+  retryCount            Int       @default(0) @map("retry_count")
+  externalReference     String?   @map("external_reference") @db.Text
+  // Observabilidad
+  correlationId         String    @default(dbgenerated("gen_random_uuid()")) @map("correlation_id") @db.Uuid
+  // Auditoría
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  resident              Resident  @relation(fields: [residentId], references: [id], onDelete: Restrict)
+
+  @@index([residentId], map: "idx_maintenance_requests_resident_id")
+  @@index([webhookStatus], map: "idx_maintenance_requests_webhook_status")
+  @@index([createdAt(sort: Desc)], map: "idx_maintenance_requests_created_at")
+  @@map("maintenance_requests")
+}
+
+// ─────────────────────────────────────────────
+// TABLE: admin_sessions
+// ─────────────────────────────────────────────
+
+model AdminSession {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionToken  String   @unique @map("session_token") @db.VarChar(255)
+  expiresAt     DateTime @map("expires_at") @db.Timestamptz()
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@index([expiresAt], map: "idx_admin_sessions_expires_at")
+  @@map("admin_sessions")
+}

@@ -1,0 +1,651 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.root{font-family:var(--font-sans);color:var(--color-text-primary);padding:0 0 3rem}
+.nav{display:flex;gap:2px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.5rem;overflow-x:auto}
+.ntab{padding:9px 15px;font-size:13px;font-weight:500;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.ntab.on{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary)}
+.ntab:hover:not(.on){background:var(--color-background-secondary);color:var(--color-text-primary)}
+.pg{display:none}.pg.on{display:block}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;line-height:1.5;white-space:nowrap}
+.b-G{background:#E1F5EE;color:#085041}
+.b-D{background:#EEEDFE;color:#3C3489}
+.b-us{background:#FAEEDA;color:#633806}
+.b-ds{background:#E6F1FB;color:#0C447C}
+.b-gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.b-shared{background:#E6F1FB;color:#0C447C}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.sl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-secondary);margin:1.25rem 0 .75rem;padding-bottom:5px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.sl:first-child{margin-top:0}
+.ok{background:#EAF3DE;border:0.5px solid #97C459;border-radius:var(--border-radius-md);padding:.75rem 1rem;font-size:13px;color:#27500A;margin-bottom:1rem;line-height:1.6}
+.warn{background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:var(--border-radius-md);padding:.75rem 1rem;font-size:13px;color:#633806;margin-bottom:1rem;line-height:1.6}
+.info{background:#E6F1FB;border:0.5px solid #85B7EB;border-radius:var(--border-radius-md);padding:.75rem 1rem;font-size:13px;color:#0C447C;margin-bottom:1rem;line-height:1.6}
+.g-col{background:#E1F5EE;border-radius:var(--border-radius-lg);padding:1rem}
+.d-col{background:#EEEDFE;border-radius:var(--border-radius-lg);padding:1rem}
+.col-head{font-size:14px;font-weight:500;margin-bottom:.875rem;display:flex;align-items:center;gap:8px}
+.sc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.625rem .75rem;margin-bottom:.5rem;cursor:pointer;transition:border-color .15s}
+.sc:hover{border-color:var(--color-border-secondary)}
+.sc.open{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.sc-head{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}
+.sc-id{font-family:var(--font-mono);font-size:10px;font-weight:500;padding:2px 5px;border-radius:3px;white-space:nowrap;margin-top:1px}
+.sc-title{font-size:12px;font-weight:500;flex:1;line-height:1.4}
+.sc-meta{display:flex;gap:4px;flex-wrap:wrap}
+.sc-detail{margin-top:.75rem;padding-top:.75rem;border-top:0.5px solid var(--color-border-tertiary);display:none;font-size:12px;line-height:1.5;color:var(--color-text-secondary)}
+.sc.open .sc-detail{display:block}
+.dl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-secondary);margin-bottom:3px;margin-top:.625rem}
+.dl:first-child{margin-top:0}
+.clist{list-style:none;padding:0}
+.clist li{font-size:12px;color:var(--color-text-secondary);line-height:1.5;padding:2px 0 2px 15px;position:relative}
+.clist li::before{content:"";position:absolute;left:3px;top:9px;width:5px;height:5px;border-radius:50%;background:var(--color-border-secondary)}
+.layer-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:500}
+.lt-db{background:#FCEBEB;color:#791F1F}
+.lt-api{background:#E6F1FB;color:#0C447C}
+.lt-ui{background:#EAF3DE;color:#27500A}
+.lt-int{background:#FAEEDA;color:#633806}
+.summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
+.sm{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem}
+.sm-n{font-size:22px;font-weight:500;margin-bottom:2px}
+.sm-l{font-size:11px;color:var(--color-text-secondary)}
+.sprint-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem}
+.sprint-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:.5rem;font-weight:500}
+.shared-card{background:var(--color-background-secondary);border:0.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:.625rem .75rem;margin-bottom:.5rem;font-size:12px;color:var(--color-text-secondary)}
+.feature-row{display:flex;gap:0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:.75rem}
+.fr-label{width:130px;min-width:130px;padding:.875rem 1rem;font-size:12px;font-weight:500;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.fr-g{background:#E1F5EE;border-right:0.5px solid var(--color-border-tertiary)}
+.fr-d{background:#EEEDFE;border-right:0.5px solid var(--color-border-tertiary)}
+.fr-s{background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary)}
+.fr-body{flex:1;padding:.875rem 1rem}
+.fr-title{font-size:13px;font-weight:500;margin-bottom:5px}
+.fr-layers{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.fr-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5}
+</style>
+
+<div class="root">
+<div class="nav">
+  <button class="ntab on" onclick="sp('split')">División de features</button>
+  <button class="ntab" onclick="sp('s1')">Sprint 1</button>
+  <button class="ntab" onclick="sp('s2')">Sprint 2</button>
+  <button class="ntab" onclick="sp('s3')">Sprint 3</button>
+  <button class="ntab" onclick="sp('s4')">Sprint 4</button>
+  <button class="ntab" onclick="sp('gabriele')">Gabriele</button>
+  <button class="ntab" onclick="sp('daniel')">Daniel</button>
+</div>
+
+<div id="pg-split" class="pg on"></div>
+<div id="pg-s1" class="pg"></div>
+<div id="pg-s2" class="pg"></div>
+<div id="pg-s3" class="pg"></div>
+<div id="pg-s4" class="pg"></div>
+<div id="pg-gabriele" class="pg"></div>
+<div id="pg-daniel" class="pg"></div>
+</div>
+
+<script>
+const STORIES = [
+
+// ─────────────────────────────────────────────
+// SPRINT 1 — Foundation compartida + primeras features verticales
+// ─────────────────────────────────────────────
+
+// COMPARTIDAS (se hacen juntos el día 1, ~2 horas)
+{id:'S-01',who:'shared',type:'DS',sprint:1,layers:['db','api'],pts:0,
+ title:'Kickoff: crear repo, estructura de carpetas, .env.example y API contract inicial',
+ context:'30 minutos juntos. Deciden la estructura y Daniel entrega el API_CONTRACT.md con los shapes de respuesta para que Gabriele pueda arrancar.',
+ tasks:['npx create-next-app tepuy --typescript --tailwind --app','Estructura de carpetas acordada: app/ app/api/ lib/schemas/ lib/supabase/ components/','Daniel escribe API_CONTRACT.md con shape de ResidentProfile y CreateSolicitudResponse','Gabriele configura shadcn/ui y los design tokens de Tailwind','Ambos pushean a main y crean sus ramas: feature/gabriele y feature/daniel'],
+ criteria:['npm run dev funciona para ambos','El API contract está en el repo antes de que cada quien trabaje por su lado'],
+ dep:'Punto de partida — se hace juntos'},
+
+// GABRIELE — Feature vertical: Flujo público del portal (DB parcial → API → UI)
+{id:'G-01',who:'G',type:'DS',sprint:1,layers:['db','api','ui'],pts:5,
+ title:'[VERTICAL] Flujo de validación de CI: tabla parcial, API lookup y pantalla 1',
+ context:'Gabriele owns este feature de principio a fin. Crea los campos que necesita en residents, el endpoint de lookup y la pantalla completa.',
+ tasks:[
+   '— DB: CREATE TABLE residents (solo los campos que necesita el lookup público: id, ci_usuario, status, nombre_usuario, tlf_usuario, descripcion_inmueble, nro_apto, fase, gerencia)',
+   '— DB: CREATE TYPE resident_status ENUM, CREATE UNIQUE INDEX ON residents(ci_usuario)',
+   '— DB: RLS habilitado + 5 rows de seed (3 activos, 1 inactivo, 1 sin CI)',
+   '— API: GET /api/residentes/lookup?ci={CI} — valida, consulta Supabase, retorna 200/403/404',
+   '— API: lib/supabase/server.ts con service_role_key',
+   '— UI: Componente ResidentLookup — input CI, botón buscar, estados de carga y error',
+   '— UI: Normalización del CI en el frontend (trim, uppercase, agregar V si falta)',
+   '— UI: Transición a ficha del residente si 200',
+ ],
+ criteria:[
+   'El lookup funciona end-to-end: ingresar CI en browser → respuesta real de Supabase',
+   'RLS: la anon_key no puede leer residents directamente',
+   'Los 3 error states se muestran correctamente en la UI (NOT_FOUND, INACTIVE, loading)',
+   'El endpoint no expone email_propietario ni tlf_propietario',
+ ],
+ dep:'Solo necesita el kickoff S-01 (estructura del repo)'},
+
+// GABRIELE — Historia de usuario del feature
+{id:'G-US-01',who:'G',type:'US',sprint:1,layers:['ui'],pts:3,
+ title:'Ingresar mi cédula para verificar si soy residente de TEPUY',
+ role:'residente de TEPUY',goal:'ingresar mi número de cédula en el portal y que el sistema me identifique',reason:'poder acceder al formulario de mantenimiento sin registrarme ni crear una cuenta',
+ criteria:[
+   'Input acepta: V12345678, 12345678, v-12345678 — el sistema normaliza automáticamente a V12345678',
+   'El botón Buscar se deshabilita si hay menos de 6 caracteres',
+   'Al presionar Enter se dispara la búsqueda igual que el botón',
+   'Durante la búsqueda: spinner visible + input bloqueado',
+   'El input tiene foco automático al cargar la página en móvil',
+ ],
+ dep:'Independiente de Daniel — Gabriele tiene su propio API'},
+
+{id:'G-US-02',who:'G',type:'US',sprint:1,layers:['ui'],pts:2,
+ title:'Ver un error claro si mi cédula no existe o mi cuenta está inactiva',
+ role:'residente',goal:'entender exactamente qué pasó y qué puedo hacer cuando mi CI no funciona',reason:'no quedarme bloqueado sin saber si me equivoqué de número o debo llamar a administración',
+ criteria:[
+   'NOT_FOUND → "No encontramos tu cédula. Verifica el número e intenta de nuevo."',
+   'INACTIVE → "Tu cuenta está inactiva. Contacta a la administración de TEPUY."',
+   'El input queda activo para corregir — no se borra solo',
+   'El mensaje aparece debajo del input, no como pop-up o alert bloqueante',
+ ],
+ dep:'Independiente de Daniel'},
+
+// DANIEL — Feature vertical: Infraestructura DB completa + tabla maintenance_requests + importación
+{id:'D-01',who:'D',type:'DS',sprint:1,layers:['db'],pts:5,
+ title:'[VERTICAL] Modelo de datos completo: tablas, enums, índices y script de importación del Excel',
+ context:'Daniel owns toda la capa de datos. Crea las tablas faltantes que Gabriele dejó parciales, agrega los campos de propietario, y el script de importación del Excel.',
+ tasks:[
+   '— DB: ALTER TABLE residents — agregar columnas faltantes: nombre_propietario, email_propietario, tlf_propietario, ci_propietario, fecha_inicio_contrato',
+   '— DB: CREATE INDEX ON residents(descripcion_inmueble) para filtros del admin',
+   '— DB: CREATE TYPE work_area_type ENUM, CREATE TYPE webhook_status_type ENUM',
+   '— DB: CREATE TABLE maintenance_requests con todos los campos del spec + FK a residents',
+   '— DB: Campo retry_count INTEGER DEFAULT 0 en maintenance_requests',
+   '— DB: Guardar migrations en /supabase/migrations/001_residents.sql y 002_requests.sql',
+   '— Script: scripts/import-residents.py — limpia datos del Excel (CI embebido en nombres, normalizar gerencias, primer teléfono si hay múltiples)',
+   '— Script: Upsert con on_conflict=ci_usuario, residentes sin CI → status=inactive',
+   '— Script: Genera reporte {importados, inactivos_por_ci, errores}',
+ ],
+ criteria:[
+   'Las migrations son idempotentes — correrlas dos veces no rompe nada',
+   'El script importa los 107 residentes del Excel sin error de script',
+   'Los residentes sin CI quedan status=inactive automáticamente',
+   'EXPLAIN ANALYZE confirma uso del índice en query por ci_usuario',
+ ],
+ dep:'Solo necesita acceso a Supabase — independiente de Gabriele'},
+
+{id:'D-02',who:'D',type:'DS',sprint:1,layers:['api'],pts:3,
+ title:'[VERTICAL] Rate limiting Upstash + schemas Zod de toda la app',
+ context:'Daniel define los contratos de tipos que ambos van a usar, y configura la seguridad base del endpoint público.',
+ tasks:[
+   '— Schemas: lib/schemas/resident.ts — CiSchema, ResidentProfileSchema, LookupErrorSchema',
+   '— Schemas: lib/schemas/solicitud.ts — CreateSolicitudBodySchema, CreateSolicitudResponseSchema',
+   '— Schemas: lib/schemas/admin.ts — CreateResidentSchema, UpdateResidentSchema',
+   '— Seguridad: lib/ratelimit.ts con Upstash — slidingWindow(10, "1m") por IP',
+   '— Seguridad: Middleware que aplica rate limit a /api/residentes/lookup',
+   '— Seguridad: RLS completo en ambas tablas (policy: solo service_role)',
+   '— Docs: Actualizar API_CONTRACT.md con todos los schemas finales',
+ ],
+ criteria:[
+   'El request 11 al lookup desde la misma IP recibe 429 con Retry-After',
+   'Gabriele puede importar los schemas Zod directamente sin modificarlos',
+   'La anon_key no puede leer ninguna tabla',
+ ],
+ dep:'Requiere D-01 (tablas creadas). Schemas listos a más tardar Día 2 del Sprint 1'},
+
+{id:'D-US-01',who:'D',type:'US',sprint:1,layers:['db'],pts:1,
+ title:'Los 107 residentes del Excel están en el sistema listos para el go-live',
+ role:'administrador de TEPUY',goal:'que todos los residentes actuales puedan buscar su perfil en el portal desde el primer día',reason:'no tener que cargar los datos manualmente uno por uno antes del lanzamiento',
+ criteria:[
+   'Residentes con CI válida: status=active, pueden hacer lookup',
+   'Residentes sin CI: status=inactive, visibles en el admin para completar',
+   'El script puede correrse múltiples veces sin duplicar registros',
+ ],
+ dep:'Independiente de Gabriele'},
+
+// ─────────────────────────────────────────────
+// SPRINT 2 — Formulario público + API solicitudes + Rate limit integrado
+// ─────────────────────────────────────────────
+
+{id:'G-02',who:'G',type:'DS',sprint:2,layers:['ui'],pts:4,
+ title:'[VERTICAL] Formulario de solicitud + ficha read-only + pantalla de éxito',
+ context:'Gabriele completa el flujo público. El formulario llama a POST /api/solicitudes que Daniel entrega en este mismo sprint.',
+ tasks:[
+   '— UI: Ficha del residente read-only (nombre, apto, residencia, gerencia, teléfono) — todos disabled',
+   '— UI: Select work_area con las categorías del WorkAreaEnum del schema de Daniel',
+   '— UI: Textarea description con contador en tiempo real (0 / 1000 chars)',
+   '— UI: Campos opcionales: preferred_time (text), access_notes (textarea 0/300)',
+   '— UI: Botón Enviar habilitado solo cuando work_area + description válidos',
+   '— UI: Loading state en submit: spinner + form disabled completo',
+   '— UI: Pantalla éxito: request_id (últimos 8 chars) + link ClickUp si existe + botón nueva solicitud',
+   '— UI: Wizard state: step(1|2|3) + guards (no llegar a step 2 sin residentData)',
+   '— UI: Indicador de progreso visual (● ○ ○)',
+   '— UI: Fade-in 200ms entre pasos',
+ ],
+ criteria:[
+   'El flujo completo funciona end-to-end con la API real de Daniel',
+   'El botón Enviar permanece disabled hasta que ambos campos requeridos son válidos',
+   'Si el residente fue inactivado entre el lookup y el submit, se muestra error INACTIVE',
+   'La pantalla de éxito muestra el botón de ClickUp solo si task_url existe en la respuesta',
+ ],
+ dep:'D-03 debe estar desplegado localmente antes del día 3 del Sprint 2'},
+
+{id:'G-US-03',who:'G',type:'US',sprint:2,layers:['ui'],pts:2,
+ title:'Ver mi ficha de residente antes de completar el formulario',
+ role:'residente',goal:'ver mis datos de apartamento, residencia y teléfono en pantalla antes de enviar',reason:'confirmar que el sistema tiene mi información correcta y confiar en el proceso',
+ criteria:[
+   'Se muestran: nombre, residencia, apartamento, gerencia (si existe), teléfono',
+   'Ningún campo es editable — todos en modo read-only',
+   'Si el nombre no existe, el apartamento actúa como identificador principal',
+ ],
+ dep:'Independiente de Daniel — Gabriele tiene la ficha desde G-01'},
+
+{id:'G-US-04',who:'G',type:'US',sprint:2,layers:['ui'],pts:2,
+ title:'Completar y enviar mi solicitud de mantenimiento',
+ role:'residente',goal:'seleccionar el área problemática, describir el problema y enviarlo con un toque',reason:'que el equipo de mantenimiento tenga toda la información necesaria para atenderme',
+ criteria:[
+   'El selector de área de trabajo es prominente y fácil de usar en móvil',
+   'La descripción tiene placeholder descriptivo y contador de caracteres',
+   'Los campos de horario y notas de acceso son claramente opcionales',
+   'El formulario muestra un spinner mientras procesa y no permite doble envío',
+ ],
+ dep:'Independiente de Daniel'},
+
+{id:'G-US-05',who:'G',type:'US',sprint:2,layers:['ui'],pts:2,
+ title:'Recibir confirmación con número de solicitud y link de seguimiento',
+ role:'residente',goal:'ver un número de referencia y (si aplica) el link directo a mi ticket en ClickUp',reason:'tener prueba de que mi solicitud fue registrada y poder hacer seguimiento sin llamar',
+ criteria:[
+   'El número de solicitud es visible y legible (últimos 8 chars en texto grande)',
+   'El link a ClickUp aparece solo si el backend lo retorna — nunca un link roto',
+   'El botón "Nueva solicitud" borra todo el estado y vuelve al paso 1',
+ ],
+ dep:'Independiente de Daniel'},
+
+{id:'G-US-06',who:'G',type:'US',sprint:2,layers:['ui'],pts:1,
+ title:'Usar el portal sin problemas desde el celular',
+ role:'residente accediendo por QR',goal:'que todos los elementos sean fácilmente tocables y no necesite hacer zoom',reason:'completar la solicitud en menos de 2 minutos parado frente al tablón de anuncios',
+ criteria:[
+   'Sin scroll horizontal en ninguna pantalla a 360px de ancho',
+   'Todos los targets táctiles tienen mínimo 44px de alto',
+   'Los inputs usan font-size 16px — sin zoom automático en iOS',
+ ],
+ dep:'Independiente de Daniel'},
+
+{id:'D-03',who:'D',type:'DS',sprint:2,layers:['api','db'],pts:5,
+ title:'[VERTICAL] POST /api/solicitudes — persistencia, re-validación y webhook async',
+ context:'Daniel completa el endpoint más crítico del sistema. Persiste la solicitud y dispara el webhook.',
+ tasks:[
+   '— API: POST /api/solicitudes — validar body con CreateSolicitudBodySchema',
+   '— API: Re-query del rid en Supabase: confirmar que existe y status=active',
+   '— API: INSERT en maintenance_requests con campos desnormalizados (ci_usuario, descripcion_inmueble, nro_apto copiados)',
+   '— API: webhook_status = pending al insertar',
+   '— API: Retornar 201 con {request_id, status} inmediatamente',
+   '— API: Llamar triggerWebhook(payload) sin await — fire and forget',
+   '— Webhook: lib/webhook.ts — construye payload completo, firma HMAC-SHA256, fetch con timeout 10s',
+   '— Webhook: Actualiza webhook_status → sent/failed + external_reference si 2xx',
+   '— API: Logging estructurado con correlation_id en cada request',
+ ],
+ criteria:[
+   'El 201 llega al cliente antes de que el webhook termine',
+   'Si el residente fue inactivado entre lookup y submit: 403 RESIDENT_INACTIVE',
+   'Si el webhook falla: la solicitud queda en DB con webhook_status=failed — no se retorna error al usuario',
+   'El WEBHOOK_SECRET nunca aparece en logs ni responses',
+ ],
+ dep:'Requiere D-01 (tablas) y D-02 (schemas). Disponible para Gabriele día 3 Sprint 2'},
+
+{id:'D-US-02',who:'D',type:'US',sprint:2,layers:['api','db'],pts:2,
+ title:'El equipo de mantenimiento recibe la solicitud en ClickUp automáticamente',
+ role:'coordinador de mantenimiento',goal:'ver cada nueva solicitud como tarea en ClickUp en menos de 30 segundos tras el envío',reason:'poder asignar técnicos y dar seguimiento sin revisar ningún sistema adicional',
+ criteria:[
+   'La tarea aparece en ClickUp en menos de 30s del envío',
+   'El nombre incluye: nombre del residente, apartamento y área de trabajo',
+   'La descripción incluye: residencia, CI, teléfono, gerencia, descripción, horario, notas de acceso',
+   'La gerencia aparece como tag en la tarea de ClickUp',
+ ],
+ dep:'Independiente de Gabriele'},
+
+// ─────────────────────────────────────────────
+// SPRINT 3 — Panel admin completo (ambos full-stack)
+// ─────────────────────────────────────────────
+
+{id:'G-03',who:'G',type:'DS',sprint:3,layers:['api','ui'],pts:6,
+ title:'[VERTICAL] Admin panel — autenticación + tabla de residentes + búsqueda y filtros',
+ context:'Gabriele es dueño de la feature de admin de principio a fin: auth, API del listado y toda la UI.',
+ tasks:[
+   '— Auth API: POST /api/admin/login — verifica password vs ADMIN_PASSWORD_HASH (bcrypt), setcookie session_token httpOnly',
+   '— Auth API: DELETE /api/admin/logout — borra cookie',
+   '— Auth middleware: lib/adminAuth.ts — verifica cookie en cada ruta /api/admin/*',
+   '— Auth UI: Página /admin/login con form de password',
+   '— Listado API: GET /api/admin/residentes — params: page, per_page, search (ci/nombre), residencia, status',
+   '— Listado API: Query Supabase con .ilike para búsqueda parcial + filtros exactos + paginación',
+   '— Listado UI: Tabla con columnas: CI, Nombre, Residencia, Apto, Gerencia, Estado, Acciones',
+   '— Listado UI: Barra de búsqueda (debounce 300ms) + filtro dropdown por residencia + toggle estado',
+   '— Listado UI: Paginación (25 por página) + badges de estado Activo/Inactivo',
+ ],
+ criteria:[
+   'Sin cookie válida, /admin redirige a /admin/login — incluyendo las API routes',
+   'Búsqueda por CI parcial (V159) retorna todos los que empiezan con V159',
+   'Combinación búsqueda + filtro residencia + estado funciona correctamente',
+   '401 en cualquier /api/admin/* sin cookie válida',
+ ],
+ dep:'Requiere D-01 (tabla residents). Independiente de las APIs de Daniel de este sprint'},
+
+{id:'G-US-07',who:'G',type:'US',sprint:3,layers:['ui'],pts:2,
+ title:'Acceder al panel de administración con contraseña',
+ role:'administrador de TEPUY',goal:'que el panel admin esté protegido por contraseña y sea solo para mí',reason:'proteger los datos personales de los residentes de accesos no autorizados',
+ criteria:[
+   'Navegar a /admin sin sesión redirige a /admin/login automáticamente',
+   'Una contraseña incorrecta muestra error claro sin revelar nada del sistema',
+   'La sesión expira en 8 horas y fuerza re-autenticación',
+ ],
+ dep:'Independiente de Daniel'},
+
+{id:'G-US-08',who:'G',type:'US',sprint:3,layers:['ui'],pts:2,
+ title:'Ver y buscar todos los residentes desde el panel admin',
+ role:'administrador',goal:'ver la lista completa de residentes y buscar por cédula o nombre rápidamente',reason:'localizar un residente para editar su información o verificar su estado sin revisar el Excel',
+ criteria:[
+   'La lista muestra CI, nombre, residencia, apartamento, gerencia y estado',
+   'La búsqueda responde en menos de 500ms',
+   'Los residentes inactivos están visualmente diferenciados (badge rojo)',
+ ],
+ dep:'Independiente de Daniel'},
+
+{id:'D-04',who:'D',type:'DS',sprint:3,layers:['api','ui'],pts:6,
+ title:'[VERTICAL] Admin panel — CRUD completo de residentes (crear, editar, activar/desactivar)',
+ context:'Daniel owns las operaciones de escritura sobre residentes: APIs de mutación y sus UI (modales).',
+ tasks:[
+   '— API: POST /api/admin/residentes — crea residente, verifica CI único (409 si duplicado)',
+   '— API: PATCH /api/admin/residentes/[id] — actualiza campos parciales (ci_usuario excluido)',
+   '— API: PATCH /api/admin/residentes/[id]/status — solo cambia status (active/inactive)',
+   '— UI: Modal "Crear residente" — RHF + zodResolver(CreateResidentSchema), valida CI en tiempo real',
+   '— UI: Modal "Editar residente" — misma form con mode=edit, CI disabled, datos pre-poblados',
+   '— UI: Dialog de confirmación antes de activar/desactivar',
+   '— UI: Toast de éxito/error después de cada operación',
+   '— UI: Optimistic update en la tabla después de mutaciones',
+ ],
+ criteria:[
+   'Un CI duplicado retorna 409 CI_ALREADY_EXISTS — no un error 500',
+   'El CI no puede modificarse desde la UI ni desde el API (ignorado en PATCH)',
+   'El toggle de estado requiere confirmación explícita — no se puede hacer por accidente',
+   'Si el API falla: la tabla revierte el optimistic update y muestra error toast',
+ ],
+ dep:'Requiere D-01 (tabla) y G-03 (auth middleware y tabla UI ya implementados)'},
+
+{id:'D-05',who:'D',type:'DS',sprint:3,layers:['api'],pts:3,
+ title:'[VERTICAL] Make.com: escenario webhook → ClickUp + Airtable + retry logic',
+ context:'Daniel configura la automatización downstream y el mecanismo de reintentos.',
+ tasks:[
+   '— Make: Escenario Custom Webhook → ClickUp Create Task → Airtable Create Record → Webhook Response',
+   '— Make: Mapeo completo de campos del payload a ClickUp (título, descripción, custom fields, gerencia como tag)',
+   '— Make: Retorna {task_url, task_id} en la respuesta para que el backend lo guarde',
+   '— Retry: Función retryFailedWebhooks() — SELECT WHERE webhook_status=failed AND retry_count < 3',
+   '— Retry: Backoff: 5min, 15min, 1h según retry_count',
+   '— Retry: Cron job (Vercel cron o Inngest) cada 15 minutos',
+   '— DB: Agregar campo retry_count si no está en la tabla',
+ ],
+ criteria:[
+   'La tarea en ClickUp tiene título: "[TEPUY] {nombre} — Apto {nro_apto} — {work_area}"',
+   'El record de Airtable incluye todos los campos del payload incluyendo link de ClickUp',
+   'Un webhook que falla se reintenta automáticamente sin intervención manual',
+   'Después de 3 intentos fallidos: webhook_status=failed permanente',
+ ],
+ dep:'Requiere D-03 (webhook function). Independiente de Gabriele'},
+
+{id:'D-US-03',who:'D',type:'US',sprint:3,layers:['ui','api'],pts:2,
+ title:'Agregar y editar residentes desde el panel de administración',
+ role:'administrador',goal:'crear un residente nuevo o editar datos de uno existente desde la interfaz web',reason:'mantener los datos actualizados cuando llegan nuevos residentes o alguien cambia de departamento',
+ criteria:[
+   'El formulario valida el formato de CI antes de guardar',
+   'No se puede crear un residente con una CI que ya existe (error claro)',
+   'El CI nunca puede editarse una vez creado el residente',
+   'Los cambios aparecen en la tabla sin recargar la página',
+ ],
+ dep:'Requiere G-03 para la tabla donde los modales se usan — coordinación con Gabriele para integrar'},
+
+{id:'D-US-04',who:'D',type:'US',sprint:3,layers:['ui','api'],pts:1,
+ title:'Activar o desactivar un residente para controlar su acceso al portal',
+ role:'administrador',goal:'marcar un residente como inactivo cuando ya no vive en TEPUY',reason:'evitar que personas que ya no son residentes puedan enviar solicitudes de mantenimiento',
+ criteria:[
+   'La acción requiere un clic de confirmación explícito — no puede hacerse por accidente',
+   'Un residente inactivo no puede completar el lookup en el portal público',
+   'El administrador puede reactivar un residente con el mismo flujo',
+ ],
+ dep:'Requiere G-03 (tabla donde aparece el botón)'},
+
+// ─────────────────────────────────────────────
+// SPRINT 4 — QA, observabilidad, deploy y go-live
+// ─────────────────────────────────────────────
+
+{id:'G-04',who:'G',type:'DS',sprint:4,layers:['ui'],pts:3,
+ title:'[VERTICAL] Mobile QA final + QR generador + página de admin/qr para imprimir',
+ context:'Gabriele cierra la calidad del frontend y entrega el QR físico.',
+ tasks:[
+   '— QA: Probar en iPhone SE (375px), iPhone 14 (390px), Android (360px)',
+   '— QA: Verificar targets 44px, font 16px en inputs, no scroll horizontal',
+   '— QA: Probar con teclado virtual activo que el layout no colapsa',
+   '— QA: Revisar contraste WCAG AA en todos los textos sobre fondo de color',
+   '— QR: Ruta /admin/qr con qrcode.react apuntando a URL de producción',
+   '— QR: Botón imprimir con @media print — solo QR + URL en texto',
+   '— QR: QR en 300x300px, URL debajo como fallback de texto',
+ ],
+ criteria:[
+   'El flujo completo funciona en el celular más pequeño (iPhone SE 375px) sin zoom ni scroll horizontal',
+   'El QR escaneado con 3 apps distintas abre la URL correcta',
+   'Al imprimir /admin/qr solo sale el QR y la URL — sin UI del admin',
+ ],
+ dep:'Independiente — es QA del trabajo de G'},
+
+{id:'G-US-09',who:'G',type:'US',sprint:4,layers:['ui'],pts:1,
+ title:'Acceder al portal escaneando el QR sin instalar ninguna app',
+ role:'residente',goal:'abrir el portal directo desde la cámara de mi celular apuntando al QR',reason:'iniciar una solicitud en segundos sin buscar ningún link ni URL',
+ criteria:[
+   'El QR funciona con la app de cámara nativa de iOS y Android',
+   'La página carga en menos de 4s en conexión 4G',
+   'No se requiere login, cuenta ni descarga de ninguna app',
+ ],
+ dep:'Usa G-04'},
+
+{id:'G-US-10',who:'G',type:'US',sprint:4,layers:['ui'],pts:1,
+ title:'El panel de administración tiene un generador de QR listo para imprimir',
+ role:'administrador',goal:'generar e imprimir el QR directamente desde el panel sin usar herramientas externas',reason:'tener el QR actualizado con la URL correcta de producción en todo momento',
+ criteria:[
+   'El QR se genera automáticamente con la URL de producción',
+   'El botón imprimir genera una hoja limpia: solo el QR y la URL',
+ ],
+ dep:'Usa G-04'},
+
+{id:'D-06',who:'D',type:'DS',sprint:4,layers:['api','db'],pts:4,
+ title:'[VERTICAL] Observabilidad completa + deploy Vercel + Postman collection',
+ context:'Daniel cierra la infraestructura: logging, deploy en producción y suite de tests de integración.',
+ tasks:[
+   '— Logging: Middleware correlation_id — UUID por request en header X-Correlation-Id',
+   '— Logging: Helper log(level, data) con JSON estructurado en todos los Route Handlers',
+   '— Logging: Log en lookup, solicitudes, admin CRUD y webhook — todos con correlation_id',
+   '— Vercel: Push repo → conectar → env vars → dominio tepuy.anvroc.com → CNAME en Hostinger',
+   '— Vercel: Verificar HTTPS activo + First Load JS < 150kB',
+   '— Postman: Colección con carpetas: Lookup, Solicitudes, Admin (CRUD completo)',
+   '— Postman: Tests de éxito, error y rate limiting — exportar como TEPUY_API_Tests.json',
+ ],
+ criteria:[
+   'Cada request en Vercel Logs tiene un correlation_id único y trazable',
+   'tepuy.anvroc.com carga con HTTPS sin advertencias',
+   'Toda la colección Postman pasa en producción',
+ ],
+ dep:'Independiente — Daniel controla infra'},
+
+{id:'D-07',who:'D',type:'DS',sprint:4,layers:['api','ui'],pts:3,
+ title:'[VERTICAL] E2E testing del sistema completo + documentación de entrega',
+ context:'Daniel valida el sistema integrado end-to-end antes del go-live.',
+ tasks:[
+   '— E2E: Flujo 1 — CI activa → lookup → formulario → submit → tarea en ClickUp → record en Airtable',
+   '— E2E: Flujo 2 — CI inexistente → error NOT_FOUND',
+   '— E2E: Flujo 3 — CI inactiva → error INACTIVE',
+   '— E2E: Flujo 4 — Submit sin work_area → botón disabled, no llega request al servidor',
+   '— E2E: Flujo 5 — 11 requests seguidos → 429 en el 11vo',
+   '-- E2E: Flujo 6 — Admin CRUD completo: crear, editar, desactivar, reactivar residente',
+   '-- Docs: README.md con setup local, variables de entorno y comandos principales',
+ ],
+ criteria:[
+   'Los 6 flujos pasan sin errores en producción con datos reales',
+   'El tiempo total del flujo feliz (QR → confirmación) es menor a 10s en 4G',
+   'El README permite que un nuevo developer levante el proyecto en menos de 15 minutos',
+ ],
+ dep:'Requiere G-04 y D-06 completados'},
+
+{id:'D-US-05',who:'D',type:'US',sprint:4,layers:['api'],pts:1,
+ title:'El sistema previene abuso del portal público de búsqueda',
+ role:'administrador del sistema',goal:'que el endpoint de búsqueda por QR tenga protección automática contra flooding',reason:'proteger los datos de los residentes y la disponibilidad del servicio sin configuración manual',
+ criteria:[
+   'Más de 10 búsquedas por minuto desde la misma IP retorna 429',
+   'El error 429 incluye cuándo puede retomar (Retry-After)',
+   'Una IP que busca normalmente nunca recibe 429',
+ ],
+ dep:'Independiente de Gabriele'},
+];
+
+let openCard = null;
+
+function sp(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  event.target.classList.add('on');
+  const renders={split:renderSplit,s1:()=>renderSprint(1),s2:()=>renderSprint(2),s3:()=>renderSprint(3),s4:()=>renderSprint(4),gabriele:()=>renderPerson('G'),daniel:()=>renderPerson('D')};
+  if(renders[id]) renders[id]();
+}
+
+const layerLabels = {db:'DB',api:'API',ui:'UI',int:'Make'};
+const layerClass = {db:'lt-db',api:'lt-api',ui:'lt-ui',int:'lt-int'};
+const idBg = {G:'b-G',D:'b-D',shared:'b-shared'};
+
+function storyCard(s){
+  const isOpen = openCard===s.id;
+  const layers = (s.layers||[]).map(l=>`<span class="layer-tag ${layerClass[l]}">${layerLabels[l]}</span>`).join('');
+  const typeLabel = s.type==='US'?'b-us':'b-ds';
+
+  let detail = '';
+  if(isOpen){
+    if(s.type==='US'){
+      detail=`<div class="dl">Como</div><div>${s.role}</div>
+      <div class="dl">Quiero</div><div>${s.goal}</div>
+      <div class="dl">Para</div><div>${s.reason}</div>
+      <div class="dl">Criterios de aceptación</div>
+      <ul class="clist">${s.criteria.map(c=>`<li>${c}</li>`).join('')}</ul>
+      <div class="dl">Independencia</div><div style="color:#27500A">${s.dep}</div>`;
+    } else {
+      detail=`<div class="dl">Contexto</div><div>${s.context}</div>
+      <div class="dl">Tareas (DB + API + UI según aplica)</div>
+      <ul class="clist">${s.tasks.map(t=>`<li>${t}</li>`).join('')}</ul>
+      <div class="dl">Criterios de aceptación</div>
+      <ul class="clist">${s.criteria.map(c=>`<li>${c}</li>`).join('')}</ul>
+      <div class="dl">Dependencias</div><div style="color:${s.dep.startsWith('Solo')||s.dep.startsWith('Independiente')||s.dep.startsWith('Requiere D-01')?'#27500A':'#633806'}">${s.dep}</div>`;
+    }
+  }
+
+  return `<div class="sc ${isOpen?'open':''}" onclick="toggle('${s.id}')">
+    <div class="sc-head">
+      <span class="sc-id badge ${idBg[s.who]||'b-gray'}">${s.id}</span>
+      <span class="sc-title">${s.title}</span>
+    </div>
+    <div class="sc-meta">
+      <span class="badge ${typeLabel}">${s.type}</span>
+      ${layers}
+      ${s.pts>0?`<span class="badge b-gray">${s.pts}pt${s.pts>1?'s':''}</span>`:''}
+    </div>
+    <div class="sc-detail">${detail}</div>
+  </div>`;
+}
+
+function toggle(id){
+  openCard = openCard===id?null:id;
+  const active=document.querySelector('.pg.on').id.replace('pg-','');
+  const r={split:renderSplit,s1:()=>renderSprint(1),s2:()=>renderSprint(2),s3:()=>renderSprint(3),s4:()=>renderSprint(4),gabriele:()=>renderPerson('G'),daniel:()=>renderPerson('D')};
+  if(r[active]) r[active]();
+}
+
+function renderSplit(){
+  const el=document.getElementById('pg-split');
+  el.innerHTML=`
+  <div class="ok">Cada historia marcada como [VERTICAL] incluye las 3 capas que le corresponden: el schema en DB si lo necesita, el endpoint de API, y la UI que lo consume. Ninguno espera al otro para empezar.</div>
+
+  <div style="font-size:14px;font-weight:500;margin-bottom:.875rem">Ownership por feature</div>
+  
+  ${[
+    {who:'G',color:'#085041',bg:'#E1F5EE',feat:'Flujo público de validación de CI',layers:['db','api','ui'],desc:'G-01 — Crea la tabla residents (campos públicos), el endpoint GET /lookup y la pantalla 1 completa.'},
+    {who:'G',color:'#085041',bg:'#E1F5EE',feat:'Formulario de solicitud + éxito',layers:['ui'],desc:'G-02 — Pantalla 2 (ficha + form), pantalla 3 (éxito). Consume el POST /api/solicitudes de Daniel.'},
+    {who:'G',color:'#085041',bg:'#E1F5EE',feat:'Admin — auth + listado + búsqueda',layers:['api','ui'],desc:'G-03 — Login/logout, middleware de auth, GET /api/admin/residentes y toda la UI de la tabla.'},
+    {who:'G',color:'#085041',bg:'#E1F5EE',feat:'Mobile QA + QR generador',layers:['ui'],desc:'G-04 — Revisión exhaustiva en móvil y generador de QR para imprimir desde /admin/qr.'},
+    {who:'D',color:'#3C3489',bg:'#EEEDFE',feat:'Modelo de datos completo + importación Excel',layers:['db'],desc:'D-01 — ALTER TABLE residents (campos de propietario), tabla maintenance_requests, migrations, script de importación.'},
+    {who:'D',color:'#3C3489',bg:'#EEEDFE',feat:'Rate limiting + schemas Zod + RLS',layers:['api'],desc:'D-02 — Todos los schemas compartidos, Upstash rate limiting, RLS en ambas tablas.'},
+    {who:'D',color:'#3C3489',bg:'#EEEDFE',feat:'POST /api/solicitudes + webhook HMAC',layers:['api','db'],desc:'D-03 — Endpoint de creación de solicitud con re-validación, persistencia y webhook firmado hacia Make.'},
+    {who:'D',color:'#3C3489',bg:'#EEEDFE',feat:'Admin — CRUD residentes (modales + APIs)',layers:['api','ui'],desc:'D-04 — POST/PATCH/status de residentes y los modales de crear/editar/toggle en el admin.'},
+    {who:'D',color:'#3C3489',bg:'#EEEDFE',feat:'Make.com + retry logic de webhooks',layers:['api'],desc:'D-05 — Escenario Make completo y mecanismo de reintentos automáticos con backoff.'},
+    {who:'D',color:'#3C3489',bg:'#EEEDFE',feat:'Deploy Vercel + logging + Postman',layers:['api','db'],desc:'D-06 — Correlation IDs, logging estructurado, deploy en producción y suite de tests de integración.'},
+  ].map(f=>`
+  <div class="feature-row">
+    <div class="fr-label" style="background:${f.bg}">
+      <span style="color:${f.color};font-weight:500;font-size:13px">${f.who==='G'?'Gabriele':'Daniel'}</span>
+      <div style="display:flex;gap:3px;flex-wrap:wrap">${f.layers.map(l=>`<span class="layer-tag ${layerClass[l]}">${layerLabels[l]}</span>`).join('')}</div>
+    </div>
+    <div class="fr-body">
+      <div class="fr-title">${f.feat}</div>
+      <div class="fr-desc">${f.desc}</div>
+    </div>
+  </div>`).join('')}
+
+  <div class="warn" style="margin-top:1rem">La única dependencia real: Daniel entrega D-01 y D-02 en los primeros 2 días del Sprint 1 (tabla residents + schemas Zod). Con eso, Gabriele puede arrancar G-01 sin bloqueos.</div>`;
+}
+
+function renderSprint(n){
+  const sprintMeta=[
+    {title:'Sprint 1',week:'Semana 1',sub:'Foundation — cada quien arranca su primer feature vertical',focus:'Día 1: kickoff S-01 juntos (1h). Daniel: tabla residents + campos extra + migration + script Excel + schemas Zod. Gabriele: UI base + shadcn + lookup completo (DB pública → API → pantalla 1 + 2 de errores).'},
+    {title:'Sprint 2',week:'Semana 2',sub:'Core — flujo público completo funcionando end-to-end',focus:'Daniel entrega POST /api/solicitudes al inicio del sprint. Gabriele completa el formulario y la pantalla de éxito. Al final del sprint el flujo completo del portal funciona en producción.'},
+    {title:'Sprint 3',week:'Semana 3',sub:'Admin panel completo — ambos full-stack en paralelo',focus:'Gabriele: auth + listado de residentes (GET API + UI). Daniel: CRUD modales y APIs de mutación + Make.com + retry logic. Al final: panel admin completamente funcional.'},
+    {title:'Sprint 4',week:'Semana 4',sub:'QA, deploy y go-live',focus:'Gabriele: mobile QA + generador QR. Daniel: logging + deploy Vercel + Postman E2E. Objetivo: el portal en tepuy.anvroc.com funcionando con los 107 residentes importados.'},
+  ][n-1];
+
+  const shared=STORIES.filter(s=>s.who==='shared'&&s.sprint===n);
+  const gs=STORIES.filter(s=>s.who==='G'&&s.sprint===n);
+  const ds=STORIES.filter(s=>s.who==='D'&&s.sprint===n);
+  const gPts=gs.reduce((a,s)=>a+s.pts,0);
+  const dPts=ds.reduce((a,s)=>a+s.pts,0);
+
+  document.getElementById('pg-s'+n).innerHTML=`
+  <div style="margin-bottom:1rem">
+    <div style="font-size:16px;font-weight:500;margin-bottom:3px">${sprintMeta.title} <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)">— ${sprintMeta.week}</span></div>
+    <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:.75rem">${sprintMeta.sub}</div>
+  </div>
+  <div class="info">${sprintMeta.focus}</div>
+  ${shared.length?`<div class="sl">Trabajo conjunto</div>${shared.map(s=>storyCard(s)).join('')}`:''}
+  <div class="sprint-grid">
+    <div class="g-col">
+      <div class="col-head"><span class="badge b-G" style="font-size:13px;padding:4px 12px">Gabriele</span><span style="font-size:11px;color:#085041">${gPts} pts</span></div>
+      ${gs.map(s=>storyCard(s)).join('')}
+    </div>
+    <div class="d-col">
+      <div class="col-head"><span class="badge b-D" style="font-size:13px;padding:4px 12px">Daniel</span><span style="font-size:11px;color:#3C3489">${dPts} pts</span></div>
+      ${ds.map(s=>storyCard(s)).join('')}
+    </div>
+  </div>`;
+}
+
+function renderPerson(who){
+  const stories=STORIES.filter(s=>s.who===who);
+  const name=who==='G'?'Gabriele':'Daniel';
+  const colorBadge=who==='G'?'b-G':'b-D';
+  const pts=stories.reduce((a,s)=>a+s.pts,0);
+  const el=document.getElementById('pg-'+(who==='G'?'gabriele':'daniel'));
+
+  const byLayer={db:0,api:0,ui:0,int:0};
+  stories.forEach(s=>(s.layers||[]).forEach(l=>{byLayer[l]=(byLayer[l]||0)+s.pts}));
+
+  el.innerHTML=`
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+    <span class="badge ${colorBadge}" style="font-size:14px;padding:5px 14px">${name}</span>
+    <span style="font-size:13px;color:var(--color-text-secondary)">${stories.length} historias · ${pts} story points · full-stack</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem">
+    ${[1,2,3,4].map(n=>{const ss=stories.filter(s=>s.sprint===n);const p=ss.reduce((a,s)=>a+s.pts,0);return`<div class="sm"><div class="sm-n">${p}</div><div class="sm-l">Sprint ${n} · ${ss.length} hist.</div></div>`;}).join('')}
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap">
+    ${Object.entries(byLayer).filter(([,v])=>v>0).map(([l,v])=>`<span class="layer-tag ${layerClass[l]}" style="font-size:12px;padding:4px 10px">${layerLabels[l]}: ${v} pts</span>`).join('')}
+  </div>
+  ${[1,2,3,4].map(n=>{
+    const ss=stories.filter(s=>s.sprint===n);
+    if(!ss.length)return'';
+    return`<div class="sl">Sprint ${n}</div>${ss.map(s=>storyCard(s)).join('')}`;
+  }).join('')}`;
+}
+
+renderSplit();
+</script>
