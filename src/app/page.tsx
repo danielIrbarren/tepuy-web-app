@@ -1,65 +1,132 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useCallback } from "react";
+import { ResidentLookup } from "@/components/resident-lookup";
+import { MaintenanceForm } from "@/components/maintenance-form";
+import { SuccessScreen } from "@/components/success-screen";
+import type { ResidentPublic } from "@/lib/schemas/resident";
+import type { CreateSolicitudResponse } from "@/lib/schemas/solicitud";
+
+type Step = "lookup" | "form" | "success";
+
+const STEP_CONFIG: Record<Step, { index: number; label: string }> = {
+  lookup: { index: 0, label: "Identificación" },
+  form: { index: 1, label: "Solicitud" },
+  success: { index: 2, label: "Confirmación" },
+};
 
 export default function Home() {
+  const [step, setStep] = useState<Step>("lookup");
+  const [resident, setResident] = useState<ResidentPublic | null>(null);
+  const [solicitudResponse, setSolicitudResponse] =
+    useState<CreateSolicitudResponse | null>(null);
+
+  const handleResidentFound = useCallback((found: ResidentPublic) => {
+    setResident(found);
+    setStep("form");
+  }, []);
+
+  const handleSolicitudSuccess = useCallback(
+    (response: CreateSolicitudResponse) => {
+      setSolicitudResponse(response);
+      setStep("success");
+    },
+    []
+  );
+
+  const handleBackToLookup = useCallback(() => {
+    setStep("lookup");
+  }, []);
+
+  const handleNewRequest = useCallback(() => {
+    setResident(null);
+    setSolicitudResponse(null);
+    setStep("lookup");
+  }, []);
+
+  const currentStep = STEP_CONFIG[step];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="flex-1 flex flex-col items-center px-4 py-6 sm:py-10">
+      <div className="w-full max-w-md space-y-6">
+        {/* ─── Progress indicator ─── */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            {Object.entries(STEP_CONFIG).map(([key, config]) => {
+              const isActive = currentStep.index === config.index;
+              const isDone = currentStep.index > config.index;
+              return (
+                <div key={key} className="flex items-center gap-1.5">
+                  <div
+                    className={`
+                      flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold
+                      transition-all duration-500
+                      ${
+                        isDone
+                          ? "bg-tepuy-500 text-white scale-90"
+                          : isActive
+                            ? "bg-tepuy-500 text-white shadow-md shadow-tepuy-500/30 scale-110"
+                            : "bg-tepuy-100 text-tepuy-400"
+                      }
+                    `}
+                  >
+                    {isDone ? (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : (
+                      config.index + 1
+                    )}
+                  </div>
+                  <span
+                    className={`text-xs font-medium transition-colors duration-300 ${
+                      isActive
+                        ? "text-tepuy-700"
+                        : isDone
+                          ? "text-tepuy-500"
+                          : "text-tepuy-300"
+                    }`}
+                  >
+                    {config.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          {/* Progress bar */}
+          <div className="h-1 w-full rounded-full bg-tepuy-100 overflow-hidden">
+            <div
+              className="h-full rounded-full progress-fill"
+              style={{
+                background: "linear-gradient(to right, oklch(0.68 0.14 170), oklch(0.58 0.14 170))",
+                width: `${((currentStep.index + 1) / 3) * 100}%`,
+              }}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
         </div>
-      </main>
-    </div>
+
+        {/* ─── Step content ─── */}
+        <div key={step} className="animate-slide-up">
+          {step === "lookup" && (
+            <ResidentLookup onResidentFound={handleResidentFound} />
+          )}
+
+          {step === "form" && resident && (
+            <MaintenanceForm
+              resident={resident}
+              onSuccess={handleSolicitudSuccess}
+              onBack={handleBackToLookup}
+            />
+          )}
+
+          {step === "success" && solicitudResponse && (
+            <SuccessScreen
+              response={solicitudResponse}
+              onNewRequest={handleNewRequest}
+            />
+          )}
+        </div>
+      </div>
+    </main>
   );
 }
