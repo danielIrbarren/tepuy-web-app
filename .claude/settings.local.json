@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(npx create-next-app@latest /Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/tepuy-web-app --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Read(//private/tmp/**)",
+      "Bash(npx create-next-app@latest tepuy-temp --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack --no-rc 2)",
+      "Bash(1:*)",
+      "Bash(npx create-next-app@latest tepuy-temp --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm)",
+      "Bash(rm -rf tepuy-temp)",
+      "Bash(yes \"\")",
+      "Bash(npx create-next-app@latest tepuy-temp --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(cp -r /tmp/tepuy-temp/. /Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/tepuy-web-app/)",
+      "Bash(rm -rf /tmp/tepuy-temp)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init -d)"
+    ]
+  }
+}
