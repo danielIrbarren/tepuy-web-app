@@ -47,18 +47,18 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* TEPUY brand palette — change these to rebrand */
-  --color-tepuy-50: var(--tepuy-50);
-  --color-tepuy-100: var(--tepuy-100);
-  --color-tepuy-200: var(--tepuy-200);
-  --color-tepuy-300: var(--tepuy-300);
-  --color-tepuy-400: var(--tepuy-400);
-  --color-tepuy-500: var(--tepuy-500);
-  --color-tepuy-600: var(--tepuy-600);
-  --color-tepuy-700: var(--tepuy-700);
-  --color-tepuy-800: var(--tepuy-800);
-  --color-tepuy-900: var(--tepuy-900);
-  --color-tepuy-950: var(--tepuy-950);
+  /* TEPUY brand palette — change these values to rebrand */
+  --color-tepuy-50: oklch(0.97 0.02 170);
+  --color-tepuy-100: oklch(0.93 0.04 170);
+  --color-tepuy-200: oklch(0.87 0.07 170);
+  --color-tepuy-300: oklch(0.78 0.11 170);
+  --color-tepuy-400: oklch(0.68 0.14 170);
+  --color-tepuy-500: oklch(0.58 0.14 170);
+  --color-tepuy-600: oklch(0.50 0.13 170);
+  --color-tepuy-700: oklch(0.43 0.11 170);
+  --color-tepuy-800: oklch(0.36 0.09 170);
+  --color-tepuy-900: oklch(0.30 0.07 170);
+  --color-tepuy-950: oklch(0.22 0.05 170);
 
   /* Animation durations */
   --animate-duration-fast: 150ms;
@@ -66,22 +66,7 @@
   --animate-duration-slow: 500ms;
 }
 
-/* ─── TEPUY brand color scale (teal-emerald) ─── */
-:root {
-  --tepuy-50: oklch(0.97 0.02 170);
-  --tepuy-100: oklch(0.93 0.04 170);
-  --tepuy-200: oklch(0.87 0.07 170);
-  --tepuy-300: oklch(0.78 0.11 170);
-  --tepuy-400: oklch(0.68 0.14 170);
-  --tepuy-500: oklch(0.58 0.14 170);
-  --tepuy-600: oklch(0.50 0.13 170);
-  --tepuy-700: oklch(0.43 0.11 170);
-  --tepuy-800: oklch(0.36 0.09 170);
-  --tepuy-900: oklch(0.30 0.07 170);
-  --tepuy-950: oklch(0.22 0.05 170);
-}
-
-/* ─── Theme tokens — now with TEPUY teal as primary ─── */
+/* ─── Theme tokens — TEPUY teal as primary ─── */
 :root {
   --background: oklch(0.985 0.002 170);
   --foreground: oklch(0.17 0.02 170);
