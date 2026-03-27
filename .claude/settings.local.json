@@ -13,7 +13,17 @@
       "Bash(cp -r /tmp/tepuy-temp/. /Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/tepuy-web-app/)",
       "Bash(rm -rf /tmp/tepuy-temp)",
       "Bash(npm install:*)",
-      "Bash(npx shadcn@latest init -d)"
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npx shadcn@latest add input card badge alert -y)",
+      "Bash(npx tsc:*)",
+      "Bash(./node_modules/typescript/bin/tsc --noEmit)",
+      "Bash(npm run:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node -e \":*)",
+      "Bash(npx shadcn@latest add select textarea label -y)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
