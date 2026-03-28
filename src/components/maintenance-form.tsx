@@ -45,11 +45,41 @@ const WORK_AREA_CONFIG: Record<
     bgActive: "bg-orange-100",
     border: "border-orange-300",
   },
-  albañileria: {
+  albanileria: {
     emoji: "🧱",
     bg: "bg-stone-50",
     bgActive: "bg-stone-100",
     border: "border-stone-300",
+  },
+  carpinteria: {
+    emoji: "🪚",
+    bg: "bg-yellow-50",
+    bgActive: "bg-yellow-100",
+    border: "border-yellow-300",
+  },
+  impermeabilizacion: {
+    emoji: "💧",
+    bg: "bg-sky-50",
+    bgActive: "bg-sky-100",
+    border: "border-sky-300",
+  },
+  vidrieria: {
+    emoji: "🪟",
+    bg: "bg-indigo-50",
+    bgActive: "bg-indigo-100",
+    border: "border-indigo-300",
+  },
+  limpieza: {
+    emoji: "🧹",
+    bg: "bg-emerald-50",
+    bgActive: "bg-emerald-100",
+    border: "border-emerald-300",
+  },
+  jardineria: {
+    emoji: "🌿",
+    bg: "bg-lime-50",
+    bgActive: "bg-lime-100",
+    border: "border-lime-300",
   },
   otro: {
     emoji: "📋",
@@ -209,7 +239,7 @@ export function MaintenanceForm({
             <span className="text-red-400 text-xs">*</span>
           </label>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {WorkArea.options.map((value) => {
               const config = WORK_AREA_CONFIG[value];
               const isSelected = workArea === value;

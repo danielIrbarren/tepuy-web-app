@@ -10,7 +10,12 @@ export const WorkArea = z.enum([
   "aire_acondicionado",
   "pintura",
   "cerrajeria",
-  "albañileria",
+  "albanileria",
+  "carpinteria",
+  "impermeabilizacion",
+  "vidrieria",
+  "limpieza",
+  "jardineria",
   "otro",
 ]);
 
@@ -23,7 +28,12 @@ export const WORK_AREA_LABELS: Record<WorkArea, string> = {
   aire_acondicionado: "Aire Acondicionado",
   pintura: "Pintura",
   cerrajeria: "Cerrajería",
-  albañileria: "Albañilería",
+  albanileria: "Albañilería",
+  carpinteria: "Carpintería",
+  impermeabilizacion: "Impermeabilización",
+  vidrieria: "Vidriería",
+  limpieza: "Limpieza",
+  jardineria: "Jardinería",
   otro: "Otro",
 };
 

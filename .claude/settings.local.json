@@ -23,7 +23,12 @@
       "Bash(npx shadcn@latest add select textarea label -y)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(open /Users/nicolagabrielecolarusso/Downloads/tepuy_sprint_status.html)",
+      "Bash(node -e \"const bcrypt = require\\(''bcryptjs''\\); bcrypt.hash\\(''tepuy-admin-2026'', 12\\).then\\(h => console.log\\(h\\)\\);\")",
+      "Bash(node -e \"console.log\\(process.env.ADMIN_PASSWORD_HASH\\)\")",
+      "Bash(grep -r \"G-US-\\\\|D-US-\\\\|historia\\\\|backlog\\\\|sprint\" /Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/tepuy-web-app --include=*.md --include=*.json)",
+      "Bash(npx next:*)"
     ]
   }
 }
