@@ -44,6 +44,7 @@ export const LookupErrorCodes = z.enum([
   "NOT_FOUND",
   "INACTIVE",
   "INTERNAL_ERROR",
+  "RATE_LIMITED", // D-02: 429 cuando se supera el límite de requests por IP
 ]);
 
 export type LookupErrorCode = z.infer<typeof LookupErrorCodes>;

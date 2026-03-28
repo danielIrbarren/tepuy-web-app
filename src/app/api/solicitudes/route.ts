@@ -6,21 +6,22 @@ import {
   type CreateSolicitudResponse,
   type SolicitudErrorResponse,
 } from "@/lib/schemas/solicitud";
+import { triggerMakeWebhook } from "@/lib/webhooks/make";
 
 /**
  * POST /api/solicitudes
  *
- * Creates a maintenance request.
+ * Crea una solicitud de mantenimiento.
  *
- * MOCK ENDPOINT — Sprint 2 (Gabriele).
- * Daniel will replace this with the real implementation in D-03:
- *   - Re-validates resident status
- *   - Inserts into maintenance_requests table
- *   - Fires webhook async to Make.com
- *   - Returns 201 with request_id
+ * Sprint 2 — D-03: Implementación completa.
+ *   1. Valida el body con Zod
+ *   2. Re-valida que el residente exista y esté activo (seguridad — no confiar en el cliente)
+ *   3. Inserta en maintenance_requests con campos desnormalizados
+ *   4. Retorna 201 inmediatamente (fire-and-forget en el webhook)
+ *   5. Dispara webhook a Make.com sin await — actualiza webhook_status en background
  *
- * TODO(Daniel): Replace this mock with real implementation.
- * The contract (request/response shapes) is final — only the internals change.
+ * El fallo del webhook NO se retorna al usuario.
+ * La solicitud queda guardada con webhook_status=failed para retry posterior.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -120,20 +121,82 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Return success
-    // TODO(Daniel): After insert, fire webhook async (fire-and-forget)
-    // via triggerWebhook(payload) — see D-03 spec.
-    // If webhook returns task_url, update external_reference in DB
-    // and include task_url in this response.
-
-    return NextResponse.json<CreateSolicitudResponse>(
+    // 4. Retornar 201 inmediatamente — antes de que el webhook termine
+    // El usuario ve la confirmación en cuanto la solicitud queda en DB.
+    const response = NextResponse.json<CreateSolicitudResponse>(
       {
         request_id: insertedRequest.id,
         status: "created",
-        task_url: null, // Will be populated when webhook integration is live
+        task_url: null, // Se actualiza en DB de forma async — no en el response inicial
       },
       { status: 201 }
     );
+
+    // 5. Fire-and-forget: disparar webhook a Make.com SIN await
+    // El .catch() asegura que ningún error no capturado rompa el proceso.
+    void triggerMakeWebhook({
+      request_id: insertedRequest.id,
+      ci_usuario: resident.ci_usuario,
+      nombre_usuario: resident.nombre_usuario,
+      nro_apto: resident.nro_apto,
+      descripcion_inmueble: resident.descripcion_inmueble,
+      tlf_usuario: resident.tlf_usuario,
+      gerencia: resident.gerencia,
+      work_area,
+      description,
+      preferred_time: preferred_time || null,
+      access_notes: access_notes || null,
+      created_at: new Date().toISOString(),
+    })
+      .then(async (taskUrl) => {
+        // Webhook exitoso: guardar task_url y marcar como sent
+        if (taskUrl) {
+          await supabaseAdmin
+            .from("maintenance_requests")
+            .update({
+              webhook_status: "sent",
+              external_reference: taskUrl,
+            })
+            .eq("id", insertedRequest.id);
+
+          console.info("[solicitudes] Webhook completado con task_url", {
+            request_id: insertedRequest.id,
+            task_url: taskUrl,
+          });
+        } else {
+          // Make.com respondió 2xx pero sin task_url — igual marcar como sent
+          await supabaseAdmin
+            .from("maintenance_requests")
+            .update({ webhook_status: "sent" })
+            .eq("id", insertedRequest.id);
+
+          console.info("[solicitudes] Webhook completado sin task_url", {
+            request_id: insertedRequest.id,
+          });
+        }
+      })
+      .catch(async (err) => {
+        // Webhook falló — marcar como failed para retry posterior (D-05)
+        console.error("[solicitudes] Webhook falló — marcando para retry", {
+          request_id: insertedRequest.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
+
+        try {
+          await supabaseAdmin
+            .from("maintenance_requests")
+            .update({ webhook_status: "failed" })
+            .eq("id", insertedRequest.id);
+        } catch (updateErr) {
+          // Si incluso el update falla, solo loguear — no propagar
+          console.error("[solicitudes] No se pudo actualizar webhook_status", {
+            request_id: insertedRequest.id,
+            error: updateErr,
+          });
+        }
+      });
+
+    return response;
   } catch (error) {
     console.error("[solicitudes] Unexpected error:", error);
     return NextResponse.json<SolicitudErrorResponse>(

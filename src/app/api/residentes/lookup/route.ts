@@ -6,6 +6,7 @@ import {
   type LookupErrorResponse,
   type LookupSuccessResponse,
 } from "@/lib/schemas/resident";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 /**
  * GET /api/residentes/lookup?ci={CI}
@@ -13,10 +14,38 @@ import {
  * Public endpoint — no auth required.
  * Uses service_role_key server-side to bypass RLS.
  * Returns only public-safe fields.
+ *
+ * D-02: Rate limited — 10 requests por minuto por IP (sliding window).
+ * El request 11 recibe 429 con header Retry-After.
  */
 export async function GET(request: NextRequest) {
   try {
-    // 1. Extract and validate query param
+    // 1. Rate limiting — verificar antes de cualquier procesamiento
+    const ip = getClientIp(request);
+    const { success, reset } = await checkRateLimit(ip);
+
+    if (!success) {
+      const retryAfterSeconds = Math.ceil((reset - Date.now()) / 1000);
+      return NextResponse.json<LookupErrorResponse>(
+        {
+          error: {
+            code: "RATE_LIMITED",
+            message: "Demasiados intentos. Espera un momento e intenta de nuevo.",
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfterSeconds),
+            "X-RateLimit-Limit": "10",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(Math.ceil(reset / 1000)),
+          },
+        }
+      );
+    }
+
+    // 2. Extract and validate query param
     const { searchParams } = request.nextUrl;
     const rawCi = searchParams.get("ci");
 
