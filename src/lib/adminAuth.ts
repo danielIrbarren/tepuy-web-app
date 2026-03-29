@@ -22,6 +22,23 @@ import type { AdminErrorResponse } from "@/lib/schemas/admin";
 export const ADMIN_SESSION_COOKIE = "tepuy_admin_session";
 export const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 horas
 
+function unauthorizedResponse(message: string) {
+  const response = NextResponse.json<AdminErrorResponse>(
+    { error: { code: "UNAUTHORIZED", message } },
+    { status: 401 }
+  );
+
+  response.cookies.set(ADMIN_SESSION_COOKIE, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  return response;
+}
+
 /**
  * Verifica que la request tenga una sesión de admin válida.
  *
@@ -34,10 +51,7 @@ export async function requireAdmin(
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
 
   if (!token) {
-    return NextResponse.json<AdminErrorResponse>(
-      { error: { code: "UNAUTHORIZED", message: "Sesión no encontrada. Inicia sesión." } },
-      { status: 401 }
-    );
+    return unauthorizedResponse("Sesión no encontrada. Inicia sesión.");
   }
 
   // Buscar la sesión en DB
@@ -49,17 +63,11 @@ export async function requireAdmin(
 
   if (error) {
     console.error("[adminAuth] Supabase error:", error.message);
-    return NextResponse.json<AdminErrorResponse>(
-      { error: { code: "UNAUTHORIZED", message: "Error verificando la sesión." } },
-      { status: 401 }
-    );
+    return unauthorizedResponse("Error verificando la sesión.");
   }
 
   if (!session) {
-    return NextResponse.json<AdminErrorResponse>(
-      { error: { code: "UNAUTHORIZED", message: "Sesión inválida. Inicia sesión." } },
-      { status: 401 }
-    );
+    return unauthorizedResponse("Sesión inválida. Inicia sesión.");
   }
 
   // Verificar expiración
@@ -70,10 +78,7 @@ export async function requireAdmin(
       .delete()
       .eq("id", session.id);
 
-    return NextResponse.json<AdminErrorResponse>(
-      { error: { code: "UNAUTHORIZED", message: "Sesión expirada. Inicia sesión nuevamente." } },
-      { status: 401 }
-    );
+    return unauthorizedResponse("Sesión expirada. Inicia sesión nuevamente.");
   }
 
   return null; // ✅ Sesión válida

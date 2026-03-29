@@ -133,68 +133,55 @@ export async function POST(request: NextRequest) {
     );
 
     // 5. Fire-and-forget: disparar webhook a Make.com SIN await
-    // El .catch() asegura que ningún error no capturado rompa el proceso.
-    void triggerMakeWebhook({
-      request_id: insertedRequest.id,
-      ci_usuario: resident.ci_usuario,
-      nombre_usuario: resident.nombre_usuario,
-      nro_apto: resident.nro_apto,
-      descripcion_inmueble: resident.descripcion_inmueble,
-      tlf_usuario: resident.tlf_usuario,
-      gerencia: resident.gerencia,
-      work_area,
-      description,
-      preferred_time: preferred_time || null,
-      access_notes: access_notes || null,
-      created_at: new Date().toISOString(),
-    })
-      .then(async (taskUrl) => {
-        // Webhook exitoso: guardar task_url y marcar como sent
-        if (taskUrl) {
-          await supabaseAdmin
-            .from("maintenance_requests")
-            .update({
-              webhook_status: "sent",
-              external_reference: taskUrl,
-            })
-            .eq("id", insertedRequest.id);
-
-          console.info("[solicitudes] Webhook completado con task_url", {
-            request_id: insertedRequest.id,
-            task_url: taskUrl,
-          });
-        } else {
-          // Make.com respondió 2xx pero sin task_url — igual marcar como sent
-          await supabaseAdmin
-            .from("maintenance_requests")
-            .update({ webhook_status: "sent" })
-            .eq("id", insertedRequest.id);
-
-          console.info("[solicitudes] Webhook completado sin task_url", {
-            request_id: insertedRequest.id,
-          });
-        }
-      })
-      .catch(async (err) => {
-        // Webhook falló — marcar como failed para retry posterior (D-05)
-        console.error("[solicitudes] Webhook falló — marcando para retry", {
-          request_id: insertedRequest.id,
-          error: err instanceof Error ? err.message : String(err),
-        });
-
-        try {
-          await supabaseAdmin
-            .from("maintenance_requests")
-            .update({ webhook_status: "failed" })
-            .eq("id", insertedRequest.id);
-        } catch (updateErr) {
-          // Si incluso el update falla, solo loguear — no propagar
-          console.error("[solicitudes] No se pudo actualizar webhook_status", {
-            request_id: insertedRequest.id,
-            error: updateErr,
-          });
-        }
+    void (async () => {
+      const webhookResult = await triggerMakeWebhook({
+        request_id: insertedRequest.id,
+        ci_usuario: resident.ci_usuario,
+        nombre_usuario: resident.nombre_usuario,
+        nro_apto: resident.nro_apto,
+        descripcion_inmueble: resident.descripcion_inmueble,
+        tlf_usuario: resident.tlf_usuario,
+        gerencia: resident.gerencia,
+        work_area,
+        description,
+        preferred_time: preferred_time || null,
+        access_notes: access_notes || null,
+        created_at: new Date().toISOString(),
       });
+
+      if (webhookResult.status === "sent") {
+        await supabaseAdmin
+          .from("maintenance_requests")
+          .update({
+            webhook_status: "sent",
+            external_reference: webhookResult.taskUrl,
+          })
+          .eq("id", insertedRequest.id);
+
+        console.info("[solicitudes] Webhook completado", {
+          request_id: insertedRequest.id,
+          task_url: webhookResult.taskUrl,
+        });
+        return;
+      }
+
+      console.error("[solicitudes] Webhook no confirmado — marcando para retry", {
+        request_id: insertedRequest.id,
+        status: webhookResult.status,
+        reason: webhookResult.reason,
+      });
+
+      await supabaseAdmin
+        .from("maintenance_requests")
+        .update({ webhook_status: "failed" })
+        .eq("id", insertedRequest.id);
+    })().catch(async (updateErr) => {
+      // Si incluso el update falla, solo loguear — no propagar
+      console.error("[solicitudes] No se pudo actualizar webhook_status", {
+        request_id: insertedRequest.id,
+        error: updateErr,
+      });
+    });
 
     return response;
   } catch (error) {

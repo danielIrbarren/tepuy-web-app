@@ -40,17 +40,22 @@ interface MakeWebhookResponse {
   task_id?: string;   // ID interno de ClickUp (opcional)
 }
 
+export interface MakeWebhookResult {
+  status: "sent" | "failed" | "skipped";
+  taskUrl: string | null;
+  reason?: string;
+}
+
 // ─── Función principal ───────────────────────────────────────────────────
 
 /**
  * Dispara el webhook a Make.com con el payload de la solicitud.
  *
- * @returns task_url de ClickUp si Make.com la devuelve, null en cualquier
- *          otro caso (no configurado, timeout, error de red, respuesta inválida).
+ * @returns estado del intento; "sent" solo cuando Make.com respondió 2xx.
  */
 export async function triggerMakeWebhook(
   payload: MakeWebhookPayload
-): Promise<string | null> {
+): Promise<MakeWebhookResult> {
   const webhookUrl = process.env.MAKE_WEBHOOK_URL;
 
   if (!webhookUrl) {
@@ -58,7 +63,11 @@ export async function triggerMakeWebhook(
       "[webhook:make] MAKE_WEBHOOK_URL no configurado — webhook omitido.",
       { request_id: payload.request_id }
     );
-    return null;
+    return {
+      status: "skipped",
+      taskUrl: null,
+      reason: "MAKE_WEBHOOK_URL no configurado",
+    };
   }
 
   const controller = new AbortController();
@@ -91,7 +100,11 @@ export async function triggerMakeWebhook(
         status: response.status,
         statusText: response.statusText,
       });
-      return null;
+      return {
+        status: "failed",
+        taskUrl: null,
+        reason: `Make.com respondió ${response.status} ${response.statusText}`,
+      };
     }
 
     // Make.com puede responder con JSON vacío o con datos de la tarea
@@ -101,7 +114,10 @@ export async function triggerMakeWebhook(
       console.info("[webhook:make] Webhook recibido sin task_url", {
         request_id: payload.request_id,
       });
-      return null;
+      return {
+        status: "sent",
+        taskUrl: null,
+      };
     }
 
     const data: MakeWebhookResponse = await response.json();
@@ -112,7 +128,10 @@ export async function triggerMakeWebhook(
       task_url: taskUrl,
     });
 
-    return taskUrl;
+    return {
+      status: "sent",
+      taskUrl,
+    };
   } catch (err) {
     clearTimeout(timeoutId);
 
@@ -120,13 +139,21 @@ export async function triggerMakeWebhook(
       console.error("[webhook:make] Timeout después de 10s", {
         request_id: payload.request_id,
       });
+      return {
+        status: "failed",
+        taskUrl: null,
+        reason: "Timeout después de 10s",
+      };
     } else {
       console.error("[webhook:make] Error de red", {
         request_id: payload.request_id,
         error: err instanceof Error ? err.message : String(err),
       });
+      return {
+        status: "failed",
+        taskUrl: null,
+        reason: err instanceof Error ? err.message : String(err),
+      };
     }
-
-    return null;
   }
 }

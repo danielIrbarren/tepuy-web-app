@@ -1,0 +1,284 @@
+"use client";
+
+import { useState } from "react";
+import type { ResidentAdmin } from "@/lib/schemas/admin";
+
+interface CreateResidentModalProps {
+  onClose: () => void;
+  onCreated: (resident: ResidentAdmin) => void;
+  onError: (message: string) => void;
+}
+
+const EMPTY_FORM = {
+  ci_usuario: "",
+  nombre_usuario: "",
+  tlf_usuario: "",
+  descripcion_inmueble: "",
+  nro_apto: "",
+  fase: "",
+  gerencia: "",
+  nombre_propietario: "",
+  ci_propietario: "",
+  email_propietario: "",
+  tlf_propietario: "",
+  fecha_inicio_contrato: "",
+};
+
+export function CreateResidentModal({ onClose, onCreated, onError }: CreateResidentModalProps) {
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldError, setFieldError] = useState<string | null>(null);
+
+  const updateField = (field: string, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (fieldError) setFieldError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.ci_usuario.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setFieldError(null);
+
+    try {
+      const res = await fetch("/api/admin/residentes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const msg = data?.error?.message ?? "Error al crear residente.";
+        if (res.status === 400 || res.status === 409) {
+          setFieldError(msg);
+        } else {
+          onError(msg);
+          onClose();
+        }
+        return;
+      }
+
+      onCreated(data.resident);
+      onClose();
+    } catch {
+      onError("Error de conexión.");
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+      <div
+        className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white rounded-2xl shadow-2xl animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-tepuy-100 px-5 py-4 rounded-t-2xl flex items-center justify-between">
+          <h2 className="text-lg font-bold text-tepuy-900">Nuevo Residente</h2>
+          <button onClick={onClose} className="text-tepuy-400 hover:text-tepuy-700 transition-colors cursor-pointer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-5">
+          {/* Datos del usuario */}
+          <fieldset className="space-y-3">
+            <legend className="text-xs font-bold text-tepuy-500 uppercase tracking-wider">Datos del inquilino</legend>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">CI <span className="text-red-400">*</span></label>
+                <input
+                  type="text"
+                  placeholder="V12345678"
+                  value={form.ci_usuario}
+                  onChange={(e) => updateField("ci_usuario", e.target.value.toUpperCase())}
+                  required
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Nombre</label>
+                <input
+                  type="text"
+                  placeholder="Nombre completo"
+                  value={form.nombre_usuario}
+                  onChange={(e) => updateField("nombre_usuario", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-tepuy-700">Teléfono</label>
+              <input
+                type="text"
+                placeholder="+58 412 1234567"
+                value={form.tlf_usuario}
+                onChange={(e) => updateField("tlf_usuario", e.target.value)}
+                className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+              />
+            </div>
+          </fieldset>
+
+          {/* Datos de la unidad */}
+          <fieldset className="space-y-3">
+            <legend className="text-xs font-bold text-tepuy-500 uppercase tracking-wider">Datos de la unidad</legend>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-tepuy-700">Descripción del inmueble</label>
+              <input
+                type="text"
+                placeholder="Ej: Residencias Tepuy, Torre A"
+                value={form.descripcion_inmueble}
+                onChange={(e) => updateField("descripcion_inmueble", e.target.value)}
+                className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Nro. Apto</label>
+                <input
+                  type="text"
+                  placeholder="Ej: 4-B"
+                  value={form.nro_apto}
+                  onChange={(e) => updateField("nro_apto", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Fase</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Fase 1"
+                  value={form.fase}
+                  onChange={(e) => updateField("fase", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Gerencia</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Norte"
+                  value={form.gerencia}
+                  onChange={(e) => updateField("gerencia", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+            </div>
+          </fieldset>
+
+          {/* Datos del propietario */}
+          <fieldset className="space-y-3">
+            <legend className="text-xs font-bold text-tepuy-500 uppercase tracking-wider">Datos del propietario</legend>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Nombre</label>
+                <input
+                  type="text"
+                  placeholder="Nombre propietario"
+                  value={form.nombre_propietario}
+                  onChange={(e) => updateField("nombre_propietario", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">CI Propietario</label>
+                <input
+                  type="text"
+                  placeholder="V12345678"
+                  value={form.ci_propietario}
+                  onChange={(e) => updateField("ci_propietario", e.target.value.toUpperCase())}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Email</label>
+                <input
+                  type="email"
+                  placeholder="email@ejemplo.com"
+                  value={form.email_propietario}
+                  onChange={(e) => updateField("email_propietario", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Teléfono</label>
+                <input
+                  type="text"
+                  placeholder="+58 412 1234567"
+                  value={form.tlf_propietario}
+                  onChange={(e) => updateField("tlf_propietario", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-tepuy-700">Inicio de contrato</label>
+              <input
+                type="date"
+                value={form.fecha_inicio_contrato}
+                onChange={(e) => updateField("fecha_inicio_contrato", e.target.value)}
+                className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+              />
+            </div>
+          </fieldset>
+
+          {/* Field error */}
+          {fieldError && (
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500 mt-0.5 shrink-0">
+                <circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" />
+              </svg>
+              <p className="text-sm text-red-700 font-medium">{fieldError}</p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="h-10 px-4 rounded-xl text-sm font-medium text-tepuy-600 hover:bg-tepuy-50 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={!form.ci_usuario.trim() || isSubmitting}
+              className="btn-tepuy h-10 px-5 rounded-xl text-sm font-semibold text-white flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Creando...
+                </>
+              ) : (
+                "Crear residente"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

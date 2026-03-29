@@ -7,10 +7,15 @@ import { z } from "zod";
 export const WorkArea = z.enum([
   "plomeria",
   "electricidad",
-  "aire_acondicionado",
   "pintura",
+  "carpinteria",
   "cerrajeria",
-  "albañileria",
+  "aire_acondicionado",
+  "albanileria",
+  "impermeabilizacion",
+  "vidrieria",
+  "limpieza",
+  "jardineria",
   "otro",
 ]);
 
@@ -20,10 +25,15 @@ export type WorkArea = z.infer<typeof WorkArea>;
 export const WORK_AREA_LABELS: Record<WorkArea, string> = {
   plomeria: "Plomería",
   electricidad: "Electricidad",
-  aire_acondicionado: "Aire Acondicionado",
   pintura: "Pintura",
+  carpinteria: "Carpintería",
   cerrajeria: "Cerrajería",
-  albañileria: "Albañilería",
+  aire_acondicionado: "Aire Acondicionado",
+  albanileria: "Albañilería",
+  impermeabilizacion: "Impermeabilización",
+  vidrieria: "Vidriería",
+  limpieza: "Limpieza",
+  jardineria: "Jardinería",
   otro: "Otro",
 };
 

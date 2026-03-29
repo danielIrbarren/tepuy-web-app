@@ -114,26 +114,31 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
       };
 
       try {
-        const taskUrl = await triggerMakeWebhook(payload);
+        const webhookResult = await triggerMakeWebhook(payload);
 
-        if (taskUrl !== null || process.env.MAKE_WEBHOOK_URL) {
-          // Webhook exitoso (taskUrl puede ser null si Make no devuelve URL pero respondió 2xx)
+        if (webhookResult.status === "skipped") {
+          console.warn(`[retry-webhooks] ${req.id} — ${webhookResult.reason}`);
+          continue;
+        }
+
+        if (webhookResult.status === "sent") {
+          // Webhook exitoso; taskUrl puede ser null si Make no devuelve URL pero respondió 2xx
           await supabaseAdmin
             .from("maintenance_requests")
             .update({
               webhook_status: "sent",
-              external_reference: taskUrl,
+              external_reference: webhookResult.taskUrl,
               retry_count: newRetryCount,
             })
             .eq("id", req.id);
 
           result.succeeded++;
           console.info(`[retry-webhooks] ✅ ${req.id} — reintento ${newRetryCount} exitoso`);
-        } else if (!process.env.MAKE_WEBHOOK_URL) {
-          // MAKE_WEBHOOK_URL no configurado — skip sin contar como fallo permanente
-          console.warn(`[retry-webhooks] MAKE_WEBHOOK_URL no configurado — skip ${req.id}`);
         } else {
-          throw new Error("triggerMakeWebhook retornó null con URL configurada");
+          throw new Error(
+            webhookResult.reason ??
+              "Make.com no confirmó recepción del webhook"
+          );
         }
       } catch (webhookErr) {
         const errMsg = webhookErr instanceof Error ? webhookErr.message : String(webhookErr);

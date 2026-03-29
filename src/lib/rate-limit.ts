@@ -34,7 +34,6 @@ function createUpstashLimiter() {
 
 // Anclar el store en globalThis para que sobreviva hot-reloads de Next.js dev
 declare global {
-  // eslint-disable-next-line no-var
   var __tepuy_ratelimit_store: Map<string, { count: number; resetAt: number }> | undefined;
 }
 

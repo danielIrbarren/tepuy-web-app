@@ -27,17 +27,17 @@ const WORK_AREA_CONFIG: Record<
     bgActive: "bg-amber-100",
     border: "border-amber-300",
   },
-  aire_acondicionado: {
-    emoji: "❄️",
-    bg: "bg-cyan-50",
-    bgActive: "bg-cyan-100",
-    border: "border-cyan-300",
-  },
   pintura: {
     emoji: "🎨",
     bg: "bg-pink-50",
     bgActive: "bg-pink-100",
     border: "border-pink-300",
+  },
+  carpinteria: {
+    emoji: "🪚",
+    bg: "bg-yellow-50",
+    bgActive: "bg-yellow-100",
+    border: "border-yellow-300",
   },
   cerrajeria: {
     emoji: "🔑",
@@ -45,11 +45,41 @@ const WORK_AREA_CONFIG: Record<
     bgActive: "bg-orange-100",
     border: "border-orange-300",
   },
-  albañileria: {
+  aire_acondicionado: {
+    emoji: "❄️",
+    bg: "bg-cyan-50",
+    bgActive: "bg-cyan-100",
+    border: "border-cyan-300",
+  },
+  albanileria: {
     emoji: "🧱",
     bg: "bg-stone-50",
     bgActive: "bg-stone-100",
     border: "border-stone-300",
+  },
+  impermeabilizacion: {
+    emoji: "💧",
+    bg: "bg-sky-50",
+    bgActive: "bg-sky-100",
+    border: "border-sky-300",
+  },
+  vidrieria: {
+    emoji: "🪟",
+    bg: "bg-indigo-50",
+    bgActive: "bg-indigo-100",
+    border: "border-indigo-300",
+  },
+  limpieza: {
+    emoji: "🧹",
+    bg: "bg-emerald-50",
+    bgActive: "bg-emerald-100",
+    border: "border-emerald-300",
+  },
+  jardineria: {
+    emoji: "🌿",
+    bg: "bg-green-50",
+    bgActive: "bg-green-100",
+    border: "border-green-300",
   },
   otro: {
     emoji: "📋",
@@ -209,7 +239,7 @@ export function MaintenanceForm({
             <span className="text-red-400 text-xs">*</span>
           </label>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {WorkArea.options.map((value) => {
               const config = WORK_AREA_CONFIG[value];
               const isSelected = workArea === value;
