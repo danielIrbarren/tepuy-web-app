@@ -29,7 +29,7 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
 
     const normalized = normalizeCi(trimmed);
     if (!normalized) {
-      setError("Formato de cédula inválido. Use un formato como V12345678.");
+      setError("Formato de cédula inválido. Utilice un formato como V12345678.");
       return;
     }
 
@@ -62,24 +62,24 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
       switch (errorData.error.code) {
         case "NOT_FOUND":
           setError(
-            "No encontramos tu cédula. Verifica el número e intenta de nuevo."
+            "No encontramos su cédula. Verifique el número e intente de nuevo."
           );
           break;
         case "INACTIVE":
           setError(
-            "Tu cuenta está inactiva. Contacta a la administración de TEPUY."
+            "Su cuenta está inactiva. Contacte a la administración de TEPUY."
           );
           break;
         case "INVALID_CI":
           setError(
-            "Formato de cédula inválido. Use un formato como V12345678."
+            "Formato de cédula inválido. Utilice un formato como V12345678."
           );
           break;
         default:
-          setError("Ocurrió un error inesperado. Intenta de nuevo.");
+          setError("Ocurrió un error inesperado. Intente de nuevo.");
       }
     } catch {
-      setError("Error de conexión. Verifica tu internet e intenta de nuevo.");
+      setError("Error de conexión. Verifique su internet e intente de nuevo.");
     } finally {
       setIsLoading(false);
     }
@@ -126,7 +126,7 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
             Portal de Mantenimiento
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed max-w-[280px] mx-auto">
-            Ingresa tu cédula para verificar tu identidad como residente de TEPUY.
+            Ingrese su cédula para verificar su identidad como residente de TEPUY.
           </p>
         </div>
       </div>

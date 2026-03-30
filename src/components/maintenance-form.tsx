@@ -152,20 +152,20 @@ export function MaintenanceForm({
       switch (errorData.error.code) {
         case "RESIDENT_INACTIVE":
           setError(
-            "Tu cuenta fue desactivada. Contacta a la administración de TEPUY."
+            "Su cuenta fue desactivada. Contacte a la administración de TEPUY."
           );
           break;
         case "RESIDENT_NOT_FOUND":
-          setError("Residente no encontrado. Vuelve a iniciar el proceso.");
+          setError("Residente no encontrado. Vuelva a iniciar el proceso.");
           break;
         case "VALIDATION_ERROR":
           setError(errorData.error.message);
           break;
         default:
-          setError("Ocurrió un error inesperado. Intenta de nuevo.");
+          setError("Ocurrió un error inesperado. Intente de nuevo.");
       }
     } catch {
-      setError("Error de conexión. Verifica tu internet e intenta de nuevo.");
+      setError("Error de conexión. Verifique su internet e intente de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -190,7 +190,7 @@ export function MaintenanceForm({
           Solicitud de Mantenimiento
         </h2>
         <p className="text-sm text-muted-foreground">
-          Completa los datos de tu solicitud
+          Complete los datos de su solicitud
         </p>
       </div>
 
@@ -593,7 +593,7 @@ export function MaintenanceForm({
         disabled={isSubmitting}
         className="w-full text-sm font-medium text-tepuy-500 hover:text-tepuy-700 transition-colors duration-200 py-2 cursor-pointer disabled:opacity-50"
       >
-        &larr; Volver a mis datos
+        &larr; Volver a sus datos
       </button>
     </div>
   );

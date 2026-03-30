@@ -6,6 +6,7 @@ import type { ResidentAdmin, ListResidentsResponse } from "@/lib/schemas/admin";
 import { CreateResidentModal } from "@/components/admin/create-resident-modal";
 import { EditResidentModal } from "@/components/admin/edit-resident-modal";
 import { StatusToggleDialog } from "@/components/admin/status-toggle-dialog";
+import { DeleteResidentDialog } from "@/components/admin/delete-resident-dialog";
 
 const PER_PAGE = 25;
 
@@ -30,6 +31,7 @@ export default function AdminPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingResident, setEditingResident] = useState<ResidentAdmin | null>(null);
   const [togglingResident, setTogglingResident] = useState<ResidentAdmin | null>(null);
+  const [deletingResident, setDeletingResident] = useState<ResidentAdmin | null>(null);
 
   // Toast
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -119,6 +121,12 @@ export default function AdminPage() {
     );
   };
 
+  const handleDeleted = (id: string) => {
+    showToast("Residente eliminado exitosamente.", "success");
+    setResidents((prev) => prev.filter((r) => r.id !== id));
+    setTotal((prev) => prev - 1);
+  };
+
   return (
     <main className="flex-1 flex flex-col min-h-0">
       {/* Admin header bar */}
@@ -143,6 +151,18 @@ export default function AdminPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push("/admin/solicitudes")}
+              className="inline-flex items-center gap-1 rounded-lg border border-tepuy-200 px-2.5 py-1.5 text-xs font-medium text-tepuy-600 transition-colors duration-200 hover:bg-tepuy-50 cursor-pointer"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" x2="8" y1="13" y2="13" />
+                <line x1="16" x2="8" y1="17" y2="17" />
+              </svg>
+              Solicitudes
+            </button>
             <button
               onClick={() => router.push("/admin/qr")}
               className="inline-flex items-center gap-1 rounded-lg border border-tepuy-200 px-2.5 py-1.5 text-xs font-medium text-tepuy-600 transition-colors duration-200 hover:bg-tepuy-50 cursor-pointer"
@@ -321,15 +341,29 @@ export default function AdminPage() {
                           </button>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <button
-                            onClick={() => setEditingResident(r)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-tepuy-600 hover:text-tepuy-800 hover:bg-tepuy-100 transition-colors cursor-pointer"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                            </svg>
-                            Editar
-                          </button>
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => setEditingResident(r)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-tepuy-600 hover:text-tepuy-800 hover:bg-tepuy-100 transition-colors cursor-pointer"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                              </svg>
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => setDeletingResident(r)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                <path d="M10 11v6" /><path d="M14 11v6" />
+                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                              </svg>
+                              Eliminar
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -389,6 +423,15 @@ export default function AdminPage() {
           resident={togglingResident}
           onClose={() => setTogglingResident(null)}
           onToggled={handleStatusToggled}
+          onError={(msg) => showToast(msg, "error")}
+        />
+      )}
+
+      {deletingResident && (
+        <DeleteResidentDialog
+          resident={deletingResident}
+          onClose={() => setDeletingResident(null)}
+          onDeleted={handleDeleted}
           onError={(msg) => showToast(msg, "error")}
         />
       )}

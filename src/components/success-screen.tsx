@@ -43,9 +43,9 @@ export function SuccessScreen({ response, onNewRequest }: SuccessScreenProps) {
           Solicitud enviada
         </h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Tu solicitud de mantenimiento fue registrada exitosamente.
+          Su solicitud de mantenimiento fue registrada exitosamente.
           <br />
-          Nos pondremos en contacto contigo pronto.
+          Nos pondremos en contacto con usted pronto.
         </p>
       </div>
 

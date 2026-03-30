@@ -1,9 +1,10 @@
 /**
  * /api/admin/residentes/[id]
  *
- * PATCH — Editar campos parciales de un residente (D-04 Daniel)
+ * PATCH  — Editar campos parciales de un residente (D-04 Daniel)
+ * DELETE — Eliminar un residente de la base de datos
  *
- * La CI (ci_usuario) está EXCLUIDA del body — es inmutable post-creación.
+ * La CI (ci_usuario) está EXCLUIDA del body del PATCH — es inmutable post-creación.
  * Si el cliente la envía, se ignora silenciosamente (no retorna error).
  */
 
@@ -105,6 +106,57 @@ export async function PATCH(
     return NextResponse.json({ resident: updated as ResidentAdmin });
   } catch (err) {
     log("error", "Error inesperado actualizando residente", { error: err instanceof Error ? err.message : String(err), correlation_id: getCorrelationId(request) });
+    return NextResponse.json<AdminErrorResponse>(
+      { error: { code: "INTERNAL_ERROR", message: "Error interno del servidor." } },
+      { status: 500 }
+    );
+  }
+}
+
+// ─── DELETE /api/admin/residentes/[id] ────────────────────────────────────
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const authError = await requireAdmin(request);
+  if (authError) return authError;
+
+  try {
+    const { id } = await params;
+
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_REGEX.test(id)) {
+      return NextResponse.json<AdminErrorResponse>(
+        { error: { code: "RESIDENT_NOT_FOUND", message: "ID de residente inválido." } },
+        { status: 404 }
+      );
+    }
+
+    const { error, count } = await supabaseAdmin
+      .from("residents")
+      .delete({ count: "exact" })
+      .eq("id", id);
+
+    if (error) {
+      log("error", "Error eliminando residente", { error: error.message, id, correlation_id: getCorrelationId(request) });
+      return NextResponse.json<AdminErrorResponse>(
+        { error: { code: "INTERNAL_ERROR", message: "Error al eliminar el residente." } },
+        { status: 500 }
+      );
+    }
+
+    if (count === 0) {
+      return NextResponse.json<AdminErrorResponse>(
+        { error: { code: "RESIDENT_NOT_FOUND", message: "Residente no encontrado." } },
+        { status: 404 }
+      );
+    }
+
+    log("info", "Residente eliminado", { id, correlation_id: getCorrelationId(request) });
+    return new NextResponse(null, { status: 204 });
+  } catch (err) {
+    log("error", "Error inesperado eliminando residente", { error: err instanceof Error ? err.message : String(err), correlation_id: getCorrelationId(request) });
     return NextResponse.json<AdminErrorResponse>(
       { error: { code: "INTERNAL_ERROR", message: "Error interno del servidor." } },
       { status: 500 }

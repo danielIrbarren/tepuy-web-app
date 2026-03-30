@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 
-const PRODUCTION_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://tepuy.anvroc.com";
+const PRODUCTION_URL = "https://tepuy-web-app.vercel.app";
 
 export default function AdminQRPage() {
   const router = useRouter();
