@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { RESIDENT_PUBLIC_FIELDS } from "@/lib/schemas/resident";
 import {
@@ -7,6 +7,8 @@ import {
   type SolicitudErrorResponse,
 } from "@/lib/schemas/solicitud";
 import { triggerMakeWebhook } from "@/lib/webhooks/make";
+import { checkSolicitudRateLimit, getClientIp } from "@/lib/rate-limit";
+import { log, getCorrelationId } from "@/lib/logger";
 
 /**
  * POST /api/solicitudes
@@ -24,7 +26,29 @@ import { triggerMakeWebhook } from "@/lib/webhooks/make";
  * La solicitud queda guardada con webhook_status=failed para retry posterior.
  */
 export async function POST(request: NextRequest) {
+  const cid = getCorrelationId(request);
+
   try {
+    // 0. Rate limiting — prevenir spam de solicitudes (5 por 5 min por IP)
+    const ip = getClientIp(request);
+    const { success: rateLimitOk, reset } = await checkSolicitudRateLimit(ip);
+
+    if (!rateLimitOk) {
+      const retryAfterSeconds = Math.ceil((reset - Date.now()) / 1000);
+      return NextResponse.json<SolicitudErrorResponse>(
+        {
+          error: {
+            code: "RATE_LIMITED",
+            message: "Demasiadas solicitudes. Espera un momento e intenta de nuevo.",
+          },
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(retryAfterSeconds) },
+        }
+      );
+    }
+
     // 1. Parse and validate body
     const body = await request.json();
     const parsed = CreateSolicitudBodySchema.safeParse(body);
@@ -52,7 +76,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (dbError) {
-      console.error("[solicitudes] Supabase error:", dbError.message);
+      log("error", "Supabase error en solicitudes", { error: dbError.message, correlation_id: cid });
       return NextResponse.json<SolicitudErrorResponse>(
         {
           error: {
@@ -109,7 +133,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError) {
-      console.error("[solicitudes] Insert error:", insertError.message);
+      log("error", "Insert error en solicitudes", { error: insertError.message, correlation_id: cid });
       return NextResponse.json<SolicitudErrorResponse>(
         {
           error: {
@@ -132,60 +156,66 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
 
-    // 5. Fire-and-forget: disparar webhook a Make.com SIN await
-    void (async () => {
-      const webhookResult = await triggerMakeWebhook({
-        request_id: insertedRequest.id,
-        ci_usuario: resident.ci_usuario,
-        nombre_usuario: resident.nombre_usuario,
-        nro_apto: resident.nro_apto,
-        descripcion_inmueble: resident.descripcion_inmueble,
-        tlf_usuario: resident.tlf_usuario,
-        gerencia: resident.gerencia,
-        work_area,
-        description,
-        preferred_time: preferred_time || null,
-        access_notes: access_notes || null,
-        created_at: new Date().toISOString(),
-      });
+    // 5. after() — ejecuta DESPUÉS de enviar la response al cliente.
+    // A diferencia de void (async () => {}), after() garantiza que Vercel
+    // NO corte la función serverless antes de que el task termine.
+    after(async () => {
+      try {
+        const webhookResult = await triggerMakeWebhook({
+          request_id: insertedRequest.id,
+          ci_usuario: resident.ci_usuario,
+          nombre_usuario: resident.nombre_usuario,
+          nro_apto: resident.nro_apto,
+          descripcion_inmueble: resident.descripcion_inmueble,
+          tlf_usuario: resident.tlf_usuario,
+          gerencia: resident.gerencia,
+          work_area,
+          description,
+          preferred_time: preferred_time || null,
+          access_notes: access_notes || null,
+          created_at: new Date().toISOString(),
+        });
 
-      if (webhookResult.status === "sent") {
+        if (webhookResult.status === "sent") {
+          await supabaseAdmin
+            .from("maintenance_requests")
+            .update({
+              webhook_status: "sent",
+              external_reference: webhookResult.taskUrl,
+            })
+            .eq("id", insertedRequest.id);
+
+          log("info", "Webhook completado", {
+            request_id: insertedRequest.id,
+            task_url: webhookResult.taskUrl,
+            correlation_id: cid,
+          });
+          return;
+        }
+
+        log("error", "Webhook no confirmado — marcando para retry", {
+          request_id: insertedRequest.id,
+          webhook_status: webhookResult.status,
+          reason: webhookResult.reason,
+          correlation_id: cid,
+        });
+
         await supabaseAdmin
           .from("maintenance_requests")
-          .update({
-            webhook_status: "sent",
-            external_reference: webhookResult.taskUrl,
-          })
+          .update({ webhook_status: "failed" })
           .eq("id", insertedRequest.id);
-
-        console.info("[solicitudes] Webhook completado", {
+      } catch (err) {
+        log("error", "No se pudo actualizar webhook_status", {
           request_id: insertedRequest.id,
-          task_url: webhookResult.taskUrl,
+          error: err instanceof Error ? err.message : String(err),
+          correlation_id: cid,
         });
-        return;
       }
-
-      console.error("[solicitudes] Webhook no confirmado — marcando para retry", {
-        request_id: insertedRequest.id,
-        status: webhookResult.status,
-        reason: webhookResult.reason,
-      });
-
-      await supabaseAdmin
-        .from("maintenance_requests")
-        .update({ webhook_status: "failed" })
-        .eq("id", insertedRequest.id);
-    })().catch(async (updateErr) => {
-      // Si incluso el update falla, solo loguear — no propagar
-      console.error("[solicitudes] No se pudo actualizar webhook_status", {
-        request_id: insertedRequest.id,
-        error: updateErr,
-      });
     });
 
     return response;
   } catch (error) {
-    console.error("[solicitudes] Unexpected error:", error);
+    log("error", "Error inesperado en solicitudes", { error: error instanceof Error ? error.message : String(error), correlation_id: cid });
     return NextResponse.json<SolicitudErrorResponse>(
       {
         error: {

@@ -18,6 +18,7 @@ import {
   type ListResidentsResponse,
   type ResidentAdmin,
 } from "@/lib/schemas/admin";
+import { log, getCorrelationId } from "@/lib/logger";
 
 // ─── GET /api/admin/residentes ────────────────────────────────────────────
 // G-03 (Gabriele): listado paginado con búsqueda y filtros.
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
       .range(from, to);
 
     if (error) {
-      console.error("[admin/residentes GET] Supabase error:", error.message);
+      log("error", "Error listando residentes", { error: error.message, correlation_id: getCorrelationId(request) });
       return NextResponse.json<AdminErrorResponse>(
         { error: { code: "INTERNAL_ERROR", message: "Error al obtener residentes." } },
         { status: 500 }
@@ -94,7 +95,7 @@ export async function GET(request: NextRequest) {
       total_pages,
     });
   } catch (err) {
-    console.error("[admin/residentes GET] Unexpected error:", err);
+    log("error", "Error inesperado listando residentes", { error: err instanceof Error ? err.message : String(err), correlation_id: getCorrelationId(request) });
     return NextResponse.json<AdminErrorResponse>(
       { error: { code: "INTERNAL_ERROR", message: "Error interno del servidor." } },
       { status: 500 }
@@ -178,17 +179,17 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      console.error("[admin/residentes POST] Insert error:", insertError.message);
+      log("error", "Error creando residente", { error: insertError.message, correlation_id: getCorrelationId(request) });
       return NextResponse.json<AdminErrorResponse>(
         { error: { code: "INTERNAL_ERROR", message: "Error al crear el residente." } },
         { status: 500 }
       );
     }
 
-    console.info("[admin/residentes POST] Residente creado", { ci_usuario, id: created.id });
+    log("info", "Residente creado", { ci_usuario, id: created.id, correlation_id: getCorrelationId(request) });
     return NextResponse.json({ resident: created as ResidentAdmin }, { status: 201 });
   } catch (err) {
-    console.error("[admin/residentes POST] Unexpected error:", err);
+    log("error", "Error inesperado creando residente", { error: err instanceof Error ? err.message : String(err), correlation_id: getCorrelationId(request) });
     return NextResponse.json<AdminErrorResponse>(
       { error: { code: "INTERNAL_ERROR", message: "Error interno del servidor." } },
       { status: 500 }

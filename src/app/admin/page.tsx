@@ -21,8 +21,10 @@ export default function AdminPage() {
 
   // Filters
   const [search, setSearch] = useState("");
+  const [residenciaFilter, setResidenciaFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debouncedResidencia, setDebouncedResidencia] = useState("");
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -32,7 +34,7 @@ export default function AdminPage() {
   // Toast
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  // Debounce search
+  // Debounce search + residencia
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -40,6 +42,14 @@ export default function AdminPage() {
     }, 400);
     return () => clearTimeout(timer);
   }, [search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedResidencia(residenciaFilter);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [residenciaFilter]);
 
   // Fetch residents
   const fetchResidents = useCallback(async () => {
@@ -49,6 +59,7 @@ export default function AdminPage() {
       params.set("page", String(page));
       params.set("per_page", String(PER_PAGE));
       if (debouncedSearch) params.set("search", debouncedSearch);
+      if (debouncedResidencia) params.set("residencia", debouncedResidencia);
       if (statusFilter) params.set("status", statusFilter);
 
       const res = await fetch(`/api/admin/residentes?${params.toString()}`);
@@ -69,7 +80,7 @@ export default function AdminPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, debouncedSearch, statusFilter, router]);
+  }, [page, debouncedSearch, debouncedResidencia, statusFilter, router]);
 
   useEffect(() => {
     fetchResidents();
@@ -196,6 +207,31 @@ export default function AdminPage() {
               />
             </div>
 
+            {/* Residencia filter */}
+            <div className="relative">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-tepuy-300"
+              >
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Filtrar por residencia..."
+                value={residenciaFilter}
+                onChange={(e) => setResidenciaFilter(e.target.value)}
+                className="w-full sm:w-44 h-10 pl-9 pr-4 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+              />
+            </div>
+
             {/* Status filter */}
             <select
               value={statusFilter}
@@ -257,7 +293,7 @@ export default function AdminPage() {
                   ) : residents.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-4 py-12 text-center text-tepuy-400">
-                        {debouncedSearch || statusFilter
+                        {debouncedSearch || debouncedResidencia || statusFilter
                           ? "No se encontraron residentes con esos filtros."
                           : "No hay residentes registrados."}
                       </td>

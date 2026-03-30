@@ -47,6 +47,16 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
         return;
       }
 
+      // Rate limit — leer Retry-After antes de parsear JSON
+      if (res.status === 429) {
+        const retryAfter = res.headers.get("Retry-After");
+        const seconds = retryAfter ? parseInt(retryAfter, 10) : 60;
+        setError(
+          `Demasiados intentos. Espera ${seconds} segundo${seconds !== 1 ? "s" : ""} e intenta de nuevo.`
+        );
+        return;
+      }
+
       const errorData: LookupErrorResponse = await res.json();
 
       switch (errorData.error.code) {

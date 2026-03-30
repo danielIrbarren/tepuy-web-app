@@ -7,6 +7,7 @@ import {
   type LookupSuccessResponse,
 } from "@/lib/schemas/resident";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { log, getCorrelationId } from "@/lib/logger";
 
 /**
  * GET /api/residentes/lookup?ci={CI}
@@ -19,6 +20,8 @@ import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
  * El request 11 recibe 429 con header Retry-After.
  */
 export async function GET(request: NextRequest) {
+  const cid = getCorrelationId(request);
+
   try {
     // 1. Rate limiting — verificar antes de cualquier procesamiento
     const ip = getClientIp(request);
@@ -85,7 +88,7 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (dbError) {
-      console.error("[lookup] Supabase error:", dbError.message);
+      log("error", "Supabase error en lookup", { error: dbError.message, correlation_id: cid });
       return NextResponse.json<LookupErrorResponse>(
         {
           error: {
@@ -131,7 +134,7 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("[lookup] Unexpected error:", error);
+    log("error", "Error inesperado en lookup", { error: error instanceof Error ? error.message : String(error), correlation_id: cid });
     return NextResponse.json<LookupErrorResponse>(
       {
         error: {

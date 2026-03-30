@@ -79,6 +79,7 @@ export const SolicitudErrorCodes = z.enum([
   "RESIDENT_NOT_FOUND",
   "RESIDENT_INACTIVE",
   "INTERNAL_ERROR",
+  "RATE_LIMITED",
 ]);
 
 export type SolicitudErrorCode = z.infer<typeof SolicitudErrorCodes>;

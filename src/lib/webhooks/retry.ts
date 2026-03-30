@@ -15,6 +15,7 @@
 
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { triggerMakeWebhook, type MakeWebhookPayload } from "@/lib/webhooks/make";
+import { log } from "@/lib/logger";
 
 // ─── Backoff según retry_count ────────────────────────────────────────────
 
@@ -49,7 +50,7 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
     errors: [],
   };
 
-  console.info("[retry-webhooks] Iniciando ciclo de retry");
+  log("info", "Iniciando ciclo de retry");
 
   try {
     // Obtener solicitudes fallidas elegibles para retry
@@ -67,17 +68,17 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
       .limit(50); // Procesar máximo 50 por ciclo para no saturar
 
     if (fetchError) {
-      console.error("[retry-webhooks] Error obteniendo solicitudes:", fetchError.message);
+      log("error", "Error obteniendo solicitudes para retry", { error: fetchError.message });
       result.errors.push(fetchError.message);
       return result;
     }
 
     if (!failedRequests || failedRequests.length === 0) {
-      console.info("[retry-webhooks] Sin solicitudes pendientes de retry");
+      log("info", "Sin solicitudes pendientes de retry");
       return result;
     }
 
-    console.info(`[retry-webhooks] ${failedRequests.length} solicitudes candidatas`);
+    log("info", "Solicitudes candidatas para retry", { count: failedRequests.length });
 
     // Procesar cada solicitud elegible
     for (const req of failedRequests) {
@@ -89,7 +90,7 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
       // Verificar si ya pasó el tiempo de backoff
       if (now < eligibleAt) {
         const waitMinutes = Math.ceil((eligibleAt.getTime() - now.getTime()) / 60000);
-        console.info(`[retry-webhooks] ${req.id} — esperar ${waitMinutes}min más (retry_count=${retryCount})`);
+        log("info", "Solicitud aún en backoff", { request_id: req.id, wait_minutes: waitMinutes, retry_count: retryCount });
         continue;
       }
 
@@ -117,7 +118,7 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
         const webhookResult = await triggerMakeWebhook(payload);
 
         if (webhookResult.status === "skipped") {
-          console.warn(`[retry-webhooks] ${req.id} — ${webhookResult.reason}`);
+          log("warn", "Retry omitido", { request_id: req.id, reason: webhookResult.reason });
           continue;
         }
 
@@ -133,7 +134,7 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
             .eq("id", req.id);
 
           result.succeeded++;
-          console.info(`[retry-webhooks] ✅ ${req.id} — reintento ${newRetryCount} exitoso`);
+          log("info", "Retry exitoso", { request_id: req.id, retry_count: newRetryCount });
         } else {
           throw new Error(
             webhookResult.reason ??
@@ -154,7 +155,7 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
             .eq("id", req.id);
 
           result.failed_permanently++;
-          console.error(`[retry-webhooks] ❌ ${req.id} — fallo permanente tras ${newRetryCount} intentos`);
+          log("error", "Fallo permanente", { request_id: req.id, retry_count: newRetryCount });
         } else {
           // Aún quedan reintentos — incrementar contador y mantener failed
           await supabaseAdmin
@@ -163,16 +164,16 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
             .eq("id", req.id);
 
           result.errors.push(`${req.id}: ${errMsg}`);
-          console.error(`[retry-webhooks] ⚠️  ${req.id} — intento ${newRetryCount} falló, quedan ${MAX_RETRIES - newRetryCount} intentos`);
+          log("warn", "Retry falló, quedan intentos", { request_id: req.id, retry_count: newRetryCount, remaining: MAX_RETRIES - newRetryCount });
         }
       }
     }
 
-    console.info("[retry-webhooks] Ciclo completado", result);
+    log("info", "Ciclo de retry completado", { ...result });
     return result;
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);
-    console.error("[retry-webhooks] Error fatal en el ciclo:", errMsg);
+    log("error", "Error fatal en ciclo de retry", { error: errMsg });
     result.errors.push(errMsg);
     return result;
   }

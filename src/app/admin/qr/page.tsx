@@ -17,7 +17,11 @@ export default function AdminQRPage() {
     <>
       <style>{`
         @media print {
-          body > *:not(.print-area) { display: none !important; }
+          /* Ocultar header/footer del layout raíz y controles del admin */
+          header, footer, .no-print { display: none !important; }
+          /* Fondo limpio para impresión */
+          body { background: white !important; min-height: auto !important; }
+          /* El QR ocupa toda la página centrado */
           .print-area {
             display: flex !important;
             flex-direction: column;
@@ -25,8 +29,10 @@ export default function AdminQRPage() {
             justify-content: center;
             min-height: 100vh;
             padding: 2rem;
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
           }
-          .no-print { display: none !important; }
         }
       `}</style>
 

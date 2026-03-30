@@ -122,9 +122,10 @@ export async function checkRateLimit(
   }
 
   // Dev fallback: en memoria
-  console.warn(
-    "[rate-limit] UPSTASH_REDIS_REST_URL/TOKEN no configurados — usando fallback en memoria"
-  );
+  if (typeof window === "undefined") {
+    // Solo logear una vez por cold start; no importar logger para evitar circular deps
+    console.warn("[rate-limit] Upstash no configurado — fallback en memoria");
+  }
   return inMemoryLimit(identifier);
 }
 
@@ -141,4 +142,46 @@ export function getClientIp(request: Request): string {
   }
   // Fallback para entornos locales sin proxy
   return "anonymous";
+}
+
+// ─── Rate limiting para POST /api/solicitudes ─────────────────────────────
+// Más restrictivo: 5 solicitudes por 5 minutos por IP.
+// Evita spam de solicitudes que generarían tareas duplicadas en ClickUp.
+
+const SOLICITUD_LIMIT = 5; // 5 solicitudes por 5 minutos por IP
+
+let _solicitudLimiter: Ratelimit | null = null;
+
+function getSolicitudLimiter(): Ratelimit | null {
+  if (_solicitudLimiter) return _solicitudLimiter;
+
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+
+  try {
+    _solicitudLimiter = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(SOLICITUD_LIMIT, "300 s"),
+      analytics: true,
+      prefix: "tepuy:solicitudes",
+    });
+    return _solicitudLimiter;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rate limiting para el endpoint de creación de solicitudes.
+ * 5 requests por 5 minutos por IP.
+ */
+export async function checkSolicitudRateLimit(
+  identifier: string
+): Promise<RateLimitResult> {
+  const upstash = getSolicitudLimiter();
+  if (upstash) return upstash.limit(identifier);
+
+  // Dev fallback — reusar inMemoryLimit con key prefijada
+  return inMemoryLimit(`solicitud:${identifier}`);
 }

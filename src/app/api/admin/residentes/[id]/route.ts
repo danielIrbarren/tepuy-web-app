@@ -16,6 +16,7 @@ import {
   type AdminErrorResponse,
   type ResidentAdmin,
 } from "@/lib/schemas/admin";
+import { log, getCorrelationId } from "@/lib/logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -86,7 +87,7 @@ export async function PATCH(
       .maybeSingle();
 
     if (error) {
-      console.error("[admin/residentes PATCH] Supabase error:", error.message);
+      log("error", "Error actualizando residente", { error: error.message, id, correlation_id: getCorrelationId(request) });
       return NextResponse.json<AdminErrorResponse>(
         { error: { code: "INTERNAL_ERROR", message: "Error al actualizar el residente." } },
         { status: 500 }
@@ -100,10 +101,10 @@ export async function PATCH(
       );
     }
 
-    console.info("[admin/residentes PATCH] Residente actualizado", { id });
+    log("info", "Residente actualizado", { id, correlation_id: getCorrelationId(request) });
     return NextResponse.json({ resident: updated as ResidentAdmin });
   } catch (err) {
-    console.error("[admin/residentes PATCH] Unexpected error:", err);
+    log("error", "Error inesperado actualizando residente", { error: err instanceof Error ? err.message : String(err), correlation_id: getCorrelationId(request) });
     return NextResponse.json<AdminErrorResponse>(
       { error: { code: "INTERNAL_ERROR", message: "Error interno del servidor." } },
       { status: 500 }

@@ -16,6 +16,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { retryFailedWebhooks } from "@/lib/webhooks/retry";
+import { log } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   // Verificar que la llamada viene de Vercel Cron o de un entorno autorizado
@@ -49,10 +50,7 @@ export async function GET(request: NextRequest) {
 
     const duration = Date.now() - startTime;
 
-    console.info("[cron/retry-webhooks] Ejecución completada", {
-      ...result,
-      duration_ms: duration,
-    });
+    log("info", "Cron retry-webhooks completado", { ...result, duration_ms: duration });
 
     return NextResponse.json({
       ok: true,
@@ -61,7 +59,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     const duration = Date.now() - startTime;
-    console.error("[cron/retry-webhooks] Error fatal:", err);
+    log("error", "Error fatal en cron retry-webhooks", { error: err instanceof Error ? err.message : String(err) });
 
     return NextResponse.json(
       {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { compare } from "bcryptjs";
 import { randomUUID } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { log, getCorrelationId } from "@/lib/logger";
 
 const ADMIN_SESSION_COOKIE = "tepuy_admin_session";
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 horas
@@ -27,9 +28,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const cid = getCorrelationId(request);
+
     const storedHash = process.env.ADMIN_PASSWORD_HASH;
     if (!storedHash) {
-      console.error("[admin:login] ADMIN_PASSWORD_HASH no configurado");
+      log("error", "ADMIN_PASSWORD_HASH no configurado", { correlation_id: cid });
       return NextResponse.json(
         { error: { code: "INTERNAL_ERROR", message: "Error de configuración del servidor." } },
         { status: 500 }
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
       });
 
     if (insertError) {
-      console.error("[admin:login] Error creando sesión:", insertError.message);
+      log("error", "Error creando sesión admin", { error: insertError.message, correlation_id: cid });
       return NextResponse.json(
         { error: { code: "INTERNAL_ERROR", message: "Error al crear la sesión." } },
         { status: 500 }

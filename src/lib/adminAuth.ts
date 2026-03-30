@@ -18,6 +18,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { AdminErrorResponse } from "@/lib/schemas/admin";
+import { log } from "@/lib/logger";
 
 export const ADMIN_SESSION_COOKIE = "tepuy_admin_session";
 export const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 horas
@@ -62,7 +63,7 @@ export async function requireAdmin(
     .maybeSingle();
 
   if (error) {
-    console.error("[adminAuth] Supabase error:", error.message);
+    log("error", "Error verificando sesión admin", { error: error.message });
     return unauthorizedResponse("Error verificando la sesión.");
   }
 
