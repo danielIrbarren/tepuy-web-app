@@ -1,0 +1,364 @@
+- generic [ref=e2]:
+  - region
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner "Global Navigation Menu" [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - button "Open menu" [ref=e12] [cursor=pointer]:
+            - img [ref=e13]
+          - link "Homepage (g then d)" [ref=e15] [cursor=pointer]:
+            - /url: /
+            - img [ref=e16]
+        - generic [ref=e18]:
+          - navigation "Breadcrumbs" [ref=e19]:
+            - list [ref=e20]:
+              - listitem [ref=e21]:
+                - link "danielIrbarren" [ref=e22] [cursor=pointer]:
+                  - /url: /danielIrbarren
+                  - generic [ref=e23]: danielIrbarren
+              - listitem [ref=e24]:
+                - link "tepuy-web-app" [ref=e25] [cursor=pointer]:
+                  - /url: /danielIrbarren/tepuy-web-app
+                  - generic [ref=e26]: tepuy-web-app
+          - button "Search or jump to…" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - generic:
+                - img
+              - generic [ref=e31]:
+                - generic:
+                  - text: Type
+                  - generic: /
+                  - text: to search
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - generic [ref=e35]:
+              - link "Chat with Copilot" [ref=e37] [cursor=pointer]:
+                - /url: /copilot
+                - img [ref=e38]
+              - button "Open Copilot…" [ref=e42] [cursor=pointer]:
+                - generic:
+                  - img
+            - button "Create new..." [ref=e44] [cursor=pointer]:
+              - generic [ref=e45]:
+                - generic:
+                  - img
+              - generic:
+                - img
+            - link "Issues" [ref=e46] [cursor=pointer]:
+              - /url: /issues
+              - img [ref=e47]
+            - link "Pull requests" [ref=e50] [cursor=pointer]:
+              - /url: /pulls
+              - img [ref=e51]
+            - link "Repositories" [ref=e53] [cursor=pointer]:
+              - /url: /repos
+              - img [ref=e54]
+          - link "You have no unread notifications (g then n)" [ref=e56] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e57]
+          - button "Open user navigation menu" [ref=e60] [cursor=pointer]:
+            - img "User avatar" [ref=e61]
+      - heading "Repository navigation" [level=2] [ref=e62]
+      - navigation "Repository" [ref=e63]:
+        - list [ref=e64]:
+          - listitem [ref=e65]:
+            - link "Code" [ref=e66] [cursor=pointer]:
+              - /url: /danielIrbarren/tepuy-web-app
+              - img [ref=e68]
+              - generic [ref=e70]: Code
+          - listitem [ref=e71]:
+            - link "Issues" [ref=e72] [cursor=pointer]:
+              - /url: /danielIrbarren/tepuy-web-app/issues
+              - img [ref=e74]
+              - generic [ref=e77]: Issues
+          - listitem [ref=e78]:
+            - link "Pull requests" [ref=e79] [cursor=pointer]:
+              - /url: /danielIrbarren/tepuy-web-app/pulls
+              - img [ref=e81]
+              - generic [ref=e83]: Pull requests
+          - listitem [ref=e84]:
+            - link "Actions" [ref=e85] [cursor=pointer]:
+              - /url: /danielIrbarren/tepuy-web-app/actions
+              - img [ref=e87]
+              - generic [ref=e89]: Actions
+          - listitem [ref=e90]:
+            - link "Projects" [ref=e91] [cursor=pointer]:
+              - /url: /danielIrbarren/tepuy-web-app/projects
+              - img [ref=e93]
+              - generic [ref=e95]: Projects
+          - listitem [ref=e96]:
+            - link "Security" [ref=e97] [cursor=pointer]:
+              - /url: /danielIrbarren/tepuy-web-app/security
+              - img [ref=e99]
+              - generic [ref=e101]: Security
+          - listitem [ref=e102]:
+            - link "Insights" [ref=e103] [cursor=pointer]:
+              - /url: /danielIrbarren/tepuy-web-app/pulse
+              - img [ref=e105]
+              - generic [ref=e107]: Insights
+          - listitem [ref=e108]:
+            - link "Settings" [ref=e109] [cursor=pointer]:
+              - /url: /danielIrbarren/tepuy-web-app/settings
+              - img [ref=e111]
+              - generic [ref=e113]: Settings
+  - generic [ref=e117]:
+    - button "Dismiss this message" [active] [ref=e118] [cursor=pointer]:
+      - img [ref=e119]
+    - alert [ref=e121]: Repository secret added.
+  - main [ref=e124]:
+    - generic [ref=e126]:
+      - 'heading "Settings: danielIrbarren/tepuy-web-app" [level=1] [ref=e127]'
+      - generic [ref=e129]:
+        - navigation "General settings" [ref=e132]:
+          - list [ref=e134]:
+            - listitem [ref=e135]:
+              - link "General" [ref=e136] [cursor=pointer]:
+                - /url: /danielIrbarren/tepuy-web-app/settings
+                - generic:
+                  - img
+                - generic [ref=e137]: General
+            - listitem [ref=e138]
+            - listitem [ref=e139]:
+              - generic [ref=e142]:
+                - heading "Access" [level=2] [ref=e144]
+                - list "Access" [ref=e145]:
+                  - listitem [ref=e146]:
+                    - link "Collaborators" [ref=e147] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/access
+                      - generic:
+                        - img
+                      - generic [ref=e148]: Collaborators
+                  - listitem [ref=e149]:
+                    - button "Moderation options" [ref=e150] [cursor=pointer]:
+                      - generic:
+                        - img
+                      - generic [ref=e151]: Moderation options
+                      - generic:
+                        - img
+            - listitem [ref=e152]
+            - listitem [ref=e153]:
+              - generic [ref=e156]:
+                - heading "Code and automation" [level=2] [ref=e158]
+                - list "Code and automation" [ref=e159]:
+                  - listitem [ref=e160]:
+                    - link "Branches" [ref=e161] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/branches
+                      - generic:
+                        - img
+                      - generic [ref=e162]: Branches
+                  - listitem [ref=e163]:
+                    - link "Tags" [ref=e164] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/tag_protection
+                      - generic:
+                        - img
+                      - generic [ref=e165]: Tags
+                  - listitem [ref=e166]:
+                    - button "Rules" [ref=e167] [cursor=pointer]:
+                      - generic:
+                        - img
+                      - generic [ref=e168]: Rules
+                      - generic:
+                        - img
+                  - listitem [ref=e169]:
+                    - button "Actions" [ref=e170] [cursor=pointer]:
+                      - generic:
+                        - img
+                      - generic [ref=e171]: Actions
+                      - generic:
+                        - img
+                  - listitem [ref=e172]:
+                    - link "Models Preview feature" [ref=e173] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/models/access-policy
+                      - generic:
+                        - img
+                      - generic [ref=e174]: Models
+                      - generic:
+                        - generic "Preview feature": Preview
+                  - listitem [ref=e175]:
+                    - link "Webhooks" [ref=e176] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/hooks
+                      - generic:
+                        - img
+                      - generic [ref=e177]: Webhooks
+                  - listitem [ref=e178]:
+                    - button "Copilot" [ref=e179] [cursor=pointer]:
+                      - generic:
+                        - img
+                      - generic [ref=e180]: Copilot
+                      - generic:
+                        - img
+                  - listitem [ref=e181]:
+                    - link "Environments" [ref=e182] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/environments
+                      - generic:
+                        - img
+                      - generic [ref=e183]: Environments
+                  - listitem [ref=e184]:
+                    - link "Codespaces" [ref=e185] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/codespaces
+                      - generic:
+                        - img
+                      - generic [ref=e186]: Codespaces
+                  - listitem [ref=e187]:
+                    - link "Pages" [ref=e188] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/pages
+                      - generic:
+                        - img
+                      - generic [ref=e189]: Pages
+            - listitem [ref=e190]
+            - listitem [ref=e191]:
+              - generic [ref=e194]:
+                - heading "Security" [level=2] [ref=e196]
+                - list "Security" [ref=e197]:
+                  - listitem [ref=e198]:
+                    - link "Advanced Security" [ref=e199] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/security_analysis
+                      - generic:
+                        - img
+                      - generic [ref=e200]: Advanced Security
+                  - listitem [ref=e201]:
+                    - link "Deploy keys" [ref=e202] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/keys
+                      - generic:
+                        - img
+                      - generic [ref=e203]: Deploy keys
+                  - listitem [ref=e204]:
+                    - button "Secrets and variables" [expanded] [ref=e205] [cursor=pointer]:
+                      - generic:
+                        - img
+                      - generic [ref=e206]: Secrets and variables
+                      - generic:
+                        - img
+                    - list "Secrets and variables" [ref=e207]:
+                      - listitem [ref=e208]:
+                        - link "Actions" [ref=e209] [cursor=pointer]:
+                          - /url: /danielIrbarren/tepuy-web-app/settings/secrets/actions
+                          - generic [ref=e210]: Actions
+                      - listitem [ref=e211]:
+                        - link "Codespaces" [ref=e212] [cursor=pointer]:
+                          - /url: /danielIrbarren/tepuy-web-app/settings/secrets/codespaces
+                          - generic [ref=e213]: Codespaces
+                      - listitem [ref=e214]:
+                        - link "Dependabot" [ref=e215] [cursor=pointer]:
+                          - /url: /danielIrbarren/tepuy-web-app/settings/secrets/dependabot
+                          - generic [ref=e216]: Dependabot
+            - listitem [ref=e217]
+            - listitem [ref=e218]:
+              - generic [ref=e221]:
+                - heading "Integrations" [level=2] [ref=e223]
+                - list "Integrations" [ref=e224]:
+                  - listitem [ref=e225]:
+                    - link "GitHub Apps" [ref=e226] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/installations
+                      - generic:
+                        - img
+                      - generic [ref=e227]: GitHub Apps
+                  - listitem [ref=e228]:
+                    - link "Email notifications" [ref=e229] [cursor=pointer]:
+                      - /url: /danielIrbarren/tepuy-web-app/settings/notifications
+                      - generic:
+                        - img
+                      - generic [ref=e230]: Email notifications
+        - generic [ref=e233]:
+          - heading "Actions secrets and variables" [level=2] [ref=e235]
+          - paragraph [ref=e236]:
+            - text: Secrets and variables allow you to manage reusable configuration data. Secrets are
+            - strong [ref=e237]: encrypted
+            - text: and are used for sensitive data.
+            - link "Learn more about encrypted secrets" [ref=e238] [cursor=pointer]:
+              - /url: https://docs.github.com/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+            - text: . Variables are shown as plain text and are used for
+            - strong [ref=e239]: non-sensitive
+            - text: data.
+            - link "Learn more about variables" [ref=e240] [cursor=pointer]:
+              - /url: https://docs.github.com/actions/learn-github-actions/variables
+            - text: .
+          - paragraph [ref=e241]: Anyone with collaborator access to this repository can use these secrets and variables for actions. They are not passed to workflows that are triggered by a pull request from a fork.
+          - navigation "Secrets or variables tab" [ref=e242]:
+            - list [ref=e243]:
+              - listitem [ref=e244]:
+                - link "Secrets" [ref=e245] [cursor=pointer]:
+                  - /url: /danielIrbarren/tepuy-web-app/settings/secrets/actions
+              - listitem [ref=e246]:
+                - link "Variables" [ref=e247] [cursor=pointer]:
+                  - /url: /danielIrbarren/tepuy-web-app/settings/variables/actions
+          - heading "Secrets" [level=3] [ref=e248]
+          - generic [ref=e251]:
+            - heading "Environment secrets" [level=2] [ref=e252]
+            - generic [ref=e255]:
+              - paragraph [ref=e256]:
+                - generic [ref=e257]: This environment has no secrets.
+              - link "Manage environment secrets" [ref=e259] [cursor=pointer]:
+                - /url: /danielIrbarren/tepuy-web-app/settings/environments
+                - generic [ref=e261]: Manage environment secrets
+          - generic [ref=e266]:
+            - heading "Repository secrets" [level=2] [ref=e267]
+            - link "New repository secret" [ref=e269] [cursor=pointer]:
+              - /url: /danielIrbarren/tepuy-web-app/settings/secrets/actions/new
+              - generic [ref=e271]: New repository secret
+            - table "Repository secrets" [ref=e273]:
+              - rowgroup [ref=e274]:
+                - row "Name Last updated sort ascending Actions" [ref=e275]:
+                  - columnheader "Name" [ref=e276]:
+                    - button "Name" [ref=e277] [cursor=pointer]:
+                      - text: Name
+                      - img [ref=e278]
+                  - columnheader "Last updated sort ascending" [ref=e280]:
+                    - button "Last updated sort ascending" [ref=e281] [cursor=pointer]:
+                      - generic "Last updated" [ref=e282]
+                      - generic [ref=e283]: sort ascending
+                  - columnheader "Actions" [ref=e284]:
+                    - generic [ref=e285]: Actions
+              - rowgroup [ref=e286]:
+                - row "VERCEL_TOKEN Mar 28, 2026now Edit VERCEL_TOKEN Delete VERCEL_TOKEN" [ref=e287]:
+                  - cell "VERCEL_TOKEN" [ref=e288]:
+                    - generic "VERCEL_TOKEN" [ref=e289]:
+                      - img [ref=e290]
+                      - code [ref=e292]: VERCEL_TOKEN
+                  - cell "Mar 28, 2026now" [ref=e293]:
+                    - generic "3/28/2026" [ref=e294]: Mar 28, 2026now
+                  - cell "Edit VERCEL_TOKEN Delete VERCEL_TOKEN" [ref=e295]:
+                    - generic [ref=e296]:
+                      - link "Edit VERCEL_TOKEN" [ref=e298] [cursor=pointer]:
+                        - /url: /danielIrbarren/tepuy-web-app/settings/secrets/actions/VERCEL_TOKEN
+                        - img [ref=e299]
+                      - button "Delete VERCEL_TOKEN" [ref=e302] [cursor=pointer]:
+                        - img [ref=e303]
+  - contentinfo [ref=e305]:
+    - heading "Footer" [level=2] [ref=e306]
+    - generic [ref=e307]:
+      - generic [ref=e308]:
+        - link "GitHub Homepage" [ref=e309] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e310]
+        - generic [ref=e312]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e313]:
+        - heading "Footer navigation" [level=3] [ref=e314]
+        - list "Footer navigation" [ref=e315]:
+          - listitem [ref=e316]:
+            - link "Terms" [ref=e317] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e318]:
+            - link "Privacy" [ref=e319] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e320]:
+            - link "Security" [ref=e321] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e322]:
+            - link "Status" [ref=e323] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e324]:
+            - link "Community" [ref=e325] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e326]:
+            - link "Docs" [ref=e327] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e328]:
+            - link "Contact" [ref=e329] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e330]:
+            - button "Manage cookies" [ref=e332] [cursor=pointer]
+          - listitem [ref=e333]:
+            - button "Do not share my personal information" [ref=e335] [cursor=pointer]

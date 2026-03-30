@@ -1,0 +1,43 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - img [ref=e6]
+      - generic [ref=e8]:
+        - generic [ref=e9]: TEPUY
+        - generic [ref=e10]: MANTENIMIENTO
+  - main [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - generic [ref=e16]: "1"
+          - generic [ref=e17]: Identificación
+        - generic [ref=e18]:
+          - generic [ref=e19]: "2"
+          - generic [ref=e20]: Solicitud
+        - generic [ref=e21]:
+          - generic [ref=e22]: "3"
+          - generic [ref=e23]: Confirmación
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - img [ref=e32]
+          - generic [ref=e37]:
+            - heading "Portal de Mantenimiento" [level=1] [ref=e38]
+            - paragraph [ref=e39]: Ingresa tu cédula para verificar tu identidad como residente de TEPUY.
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - img [ref=e43]
+              - text: Cédula de Identidad
+            - textbox "Cédula de Identidad" [ref=e45]:
+              - /placeholder: "Ej: V12345678"
+              - text: V8283854
+          - generic [ref=e54]:
+            - img [ref=e55]
+            - alert [ref=e57]: No encontramos tu cédula. Verifica el número e intenta de nuevo.
+          - button "Buscar" [ref=e46] [cursor=pointer]:
+            - img [ref=e47]
+            - text: Buscar
+        - paragraph [ref=e50]: "Formatos aceptados: V12345678, 12345678, V-12.345.678"
+  - contentinfo [ref=e51]:
+    - paragraph [ref=e52]: Portal de Mantenimiento TEPUY · 2026
+  - alert [ref=e53]

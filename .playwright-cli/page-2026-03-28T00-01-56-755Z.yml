@@ -1,0 +1,130 @@
+- generic [ref=e2]:
+  - region
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner "Global Navigation Menu" [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - button "Open menu" [ref=e12] [cursor=pointer]:
+            - img [ref=e13]
+          - link "Homepage (g then d)" [ref=e15] [cursor=pointer]:
+            - /url: /
+            - img [ref=e16]
+        - button "Search or jump to…" [ref=e21] [cursor=pointer]:
+          - generic [ref=e22]:
+            - generic:
+              - img
+            - generic [ref=e23]:
+              - generic:
+                - text: Type
+                - generic: /
+                - text: to search
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - generic [ref=e27]:
+              - link "Chat with Copilot" [ref=e29] [cursor=pointer]:
+                - /url: /copilot
+                - img [ref=e30]
+              - button "Open Copilot…" [ref=e34] [cursor=pointer]:
+                - generic:
+                  - img
+            - button "Create new..." [ref=e36] [cursor=pointer]:
+              - generic [ref=e37]:
+                - generic:
+                  - img
+              - generic:
+                - img
+            - link "Issues (g then i)" [ref=e38] [cursor=pointer]:
+              - /url: /issues
+              - img [ref=e39]
+            - link "Pull requests (g then p)" [ref=e42] [cursor=pointer]:
+              - /url: /pulls
+              - img [ref=e43]
+            - link "Repositories" [ref=e45] [cursor=pointer]:
+              - /url: /repos
+              - img [ref=e46]
+          - link "You have no unread notifications (g then n)" [ref=e48] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e49]
+          - button "Open user navigation menu" [ref=e52] [cursor=pointer]:
+            - img "User avatar" [ref=e53]
+  - main [ref=e56]:
+    - generic [ref=e57]:
+      - generic [ref=e58]:
+        - generic [ref=e62]:
+          - heading "Vercel" [level=1] [ref=e63]
+          - heading "GitHub App" [level=2] [ref=e64]
+        - generic [ref=e66]:
+          - link "Configure" [ref=e67] [cursor=pointer]:
+            - /url: /settings/installations/119540019
+            - generic [ref=e69]: Configure
+          - paragraph [ref=e70]: Manage your installation settings.
+      - generic [ref=e71]:
+        - generic [ref=e73]:
+          - paragraph [ref=e74]:
+            - text: Vercel for GitHub automatically deploys your PRs to Vercel.
+            - text: Preview every PR live, without any configuration required.
+          - paragraph [ref=e75]:
+            - text: For more information, see our
+            - link "documentation" [ref=e76] [cursor=pointer]:
+              - /url: https://vercel.com/docs/github?utm_source=github&utm_medium=marketplace&utm_campaign=vercel-app
+            - text: .
+          - paragraph [ref=e77]:
+            - link [ref=e78] [cursor=pointer]:
+              - /url: https://camo.githubusercontent.com/39e066ea3d764cee86b985cdca6f61f7efb02008260339c905fc60d392483801/68747470733a2f2f6173736574732e76657263656c2e636f6d2f696d6167652f75706c6f61642f76313539373934333732372f66726f6e742f6769746875622f6769746875622d636f6d6d656e742d6d6f6e6f7265706f2e706e67
+        - generic [ref=e79]:
+          - paragraph [ref=e80]: Developer
+          - list [ref=e81]:
+            - listitem [ref=e82]:
+              - img "@vercel" [ref=e83]
+              - link "vercel" [ref=e84] [cursor=pointer]:
+                - /url: /vercel
+            - listitem
+            - listitem [ref=e85]:
+              - img [ref=e86]
+              - link "Website" [ref=e88] [cursor=pointer]:
+                - /url: https://vercel.com/github
+          - paragraph [ref=e89]:
+            - strong [ref=e90]: Vercel
+            - text: is provided by a third-party and is governed by separate terms of service, privacy policy, and support documentation.
+          - link "Report abuse" [ref=e91] [cursor=pointer]:
+            - /url: /contact/report-abuse?report=https%3A%2F%2Fgithub.com%2Fapps%2Fvercel
+            - img [ref=e92]
+            - text: Report abuse
+  - contentinfo [ref=e94]:
+    - heading "Footer" [level=2] [ref=e95]
+    - generic [ref=e96]:
+      - generic [ref=e97]:
+        - link "GitHub Homepage" [ref=e98] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e99]
+        - generic [ref=e101]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e102]:
+        - heading "Footer navigation" [level=3] [ref=e103]
+        - list "Footer navigation" [ref=e104]:
+          - listitem [ref=e105]:
+            - link "Terms" [ref=e106] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e107]:
+            - link "Privacy" [ref=e108] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e109]:
+            - link "Security" [ref=e110] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e111]:
+            - link "Status" [ref=e112] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e113]:
+            - link "Community" [ref=e114] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e115]:
+            - link "Docs" [ref=e116] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e117]:
+            - link "Contact" [ref=e118] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e119]:
+            - button "Manage cookies" [ref=e121] [cursor=pointer]
+          - listitem [ref=e122]:
+            - button "Do not share my personal information" [ref=e124] [cursor=pointer]
