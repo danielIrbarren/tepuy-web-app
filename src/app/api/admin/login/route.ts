@@ -7,6 +7,23 @@ import { log, getCorrelationId } from "@/lib/logger";
 const ADMIN_SESSION_COOKIE = "tepuy_admin_session";
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 horas
 
+function normalizeBcryptHash(rawHash: string) {
+  let normalized = rawHash.trim();
+
+  // Some env providers persist pasted secrets with wrapping quotes.
+  if (
+    (normalized.startsWith('"') && normalized.endsWith('"')) ||
+    (normalized.startsWith("'") && normalized.endsWith("'"))
+  ) {
+    normalized = normalized.slice(1, -1);
+  }
+
+  // dotenv requires escaping `$`, but the runtime value must be plain bcrypt.
+  normalized = normalized.replace(/\\\$/g, "$");
+
+  return normalized;
+}
+
 /**
  * POST /api/admin/login
  *
@@ -30,13 +47,25 @@ export async function POST(request: NextRequest) {
 
     const cid = getCorrelationId(request);
 
-    const storedHash = process.env.ADMIN_PASSWORD_HASH;
-    if (!storedHash) {
+    const storedHashRaw = process.env.ADMIN_PASSWORD_HASH;
+    if (!storedHashRaw) {
       log("error", "ADMIN_PASSWORD_HASH no configurado", { correlation_id: cid });
       return NextResponse.json(
         { error: { code: "INTERNAL_ERROR", message: "Error de configuración del servidor." } },
         { status: 500 }
       );
+    }
+
+    const storedHash = normalizeBcryptHash(storedHashRaw);
+
+    if (storedHash !== storedHashRaw) {
+      log("warn", "ADMIN_PASSWORD_HASH normalizado antes de validar login", {
+        correlation_id: cid,
+        had_wrapping_quotes: /^["'].*["']$/.test(storedHashRaw.trim()),
+        had_escaped_dollars: storedHashRaw.includes("\\$"),
+        raw_length: storedHashRaw.length,
+        normalized_length: storedHash.length,
+      });
     }
 
     const isValid = await compare(password, storedHash);
