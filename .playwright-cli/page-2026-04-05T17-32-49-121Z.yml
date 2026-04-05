@@ -1,0 +1,29 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - img [ref=e7]
+      - generic [ref=e9]:
+        - generic [ref=e10]: TEPUY
+        - generic [ref=e11]: Mantenimiento
+  - main [ref=e12]:
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - img [ref=e17]
+        - generic [ref=e20]:
+          - heading "Panel de Administración" [level=1] [ref=e21]
+          - paragraph [ref=e22]: Ingresa la contraseña de administrador
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - img [ref=e26]
+            - text: Contraseña
+          - textbox "Contraseña" [active] [ref=e28]:
+            - /placeholder: Ingresa la contraseña
+        - button "Ingresar" [disabled] [ref=e29]:
+          - img [ref=e30]
+          - text: Ingresar
+      - link "← Volver al portal público" [ref=e34] [cursor=pointer]:
+        - /url: /
+  - contentinfo [ref=e35]:
+    - paragraph [ref=e36]: TEPUY · Portal de Mantenimiento · 2026
+  - alert [ref=e37]
