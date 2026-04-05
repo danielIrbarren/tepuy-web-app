@@ -1,93 +1,74 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Wrench,
+  Zap,
+  Paintbrush,
+  Hammer,
+  Key,
+  Wind,
+  Layers,
+  Droplets,
+  LayoutGrid,
+  Sparkles,
+  ClipboardList,
+  AlertTriangle,
+  Clock,
+  ChevronDown,
+} from "lucide-react";
 import { ResidentCard } from "@/components/resident-card";
 import {
   WorkArea,
   WORK_AREA_LABELS,
+  Criticality,
   type CreateSolicitudResponse,
   type SolicitudErrorResponse,
 } from "@/lib/schemas/solicitud";
 import type { ResidentPublic } from "@/lib/schemas/resident";
 
-// Icons + colors for work areas (used in grid selector)
-const WORK_AREA_CONFIG: Record<
-  string,
-  { emoji: string; bg: string; bgActive: string; border: string }
-> = {
-  plomeria: {
-    emoji: "🔧",
-    bg: "bg-blue-50",
-    bgActive: "bg-blue-100",
-    border: "border-blue-300",
-  },
-  electricidad: {
-    emoji: "⚡",
-    bg: "bg-amber-50",
-    bgActive: "bg-amber-100",
-    border: "border-amber-300",
-  },
-  pintura: {
-    emoji: "🎨",
-    bg: "bg-pink-50",
-    bgActive: "bg-pink-100",
-    border: "border-pink-300",
-  },
-  carpinteria: {
-    emoji: "🪚",
-    bg: "bg-yellow-50",
-    bgActive: "bg-yellow-100",
-    border: "border-yellow-300",
-  },
-  cerrajeria: {
-    emoji: "🔑",
-    bg: "bg-orange-50",
-    bgActive: "bg-orange-100",
-    border: "border-orange-300",
-  },
-  aire_acondicionado: {
-    emoji: "❄️",
-    bg: "bg-cyan-50",
-    bgActive: "bg-cyan-100",
-    border: "border-cyan-300",
-  },
-  albanileria: {
-    emoji: "🧱",
-    bg: "bg-stone-50",
-    bgActive: "bg-stone-100",
-    border: "border-stone-300",
-  },
-  impermeabilizacion: {
-    emoji: "💧",
-    bg: "bg-sky-50",
-    bgActive: "bg-sky-100",
-    border: "border-sky-300",
-  },
-  vidrieria: {
-    emoji: "🪟",
-    bg: "bg-indigo-50",
-    bgActive: "bg-indigo-100",
-    border: "border-indigo-300",
-  },
-  limpieza: {
-    emoji: "🧹",
-    bg: "bg-emerald-50",
-    bgActive: "bg-emerald-100",
-    border: "border-emerald-300",
-  },
-  jardineria: {
-    emoji: "🌿",
-    bg: "bg-green-50",
-    bgActive: "bg-green-100",
-    border: "border-green-300",
-  },
-  otro: {
-    emoji: "📋",
-    bg: "bg-gray-50",
-    bgActive: "bg-gray-100",
-    border: "border-gray-300",
-  },
+// Work areas excluded from UI (kept in DB enum)
+const HIDDEN_WORK_AREAS = new Set(["jardineria"]);
+
+// Ordered: "Otro" first, then the rest
+const orderedWorkAreas = [
+  "otro",
+  ...WorkArea.options.filter((v) => v !== "otro" && !HIDDEN_WORK_AREAS.has(v)),
+];
+
+// Lucide icons per work area
+const WORK_AREA_ICONS: Record<string, React.ReactNode> = {
+  plomeria:           <Wrench size={18} strokeWidth={1.6} />,
+  electricidad:       <Zap size={18} strokeWidth={1.6} />,
+  pintura:            <Paintbrush size={18} strokeWidth={1.6} />,
+  carpinteria:        <Hammer size={18} strokeWidth={1.6} />,
+  cerrajeria:         <Key size={18} strokeWidth={1.6} />,
+  aire_acondicionado: <Wind size={18} strokeWidth={1.6} />,
+  albanileria:        <Layers size={18} strokeWidth={1.6} />,
+  impermeabilizacion: <Droplets size={18} strokeWidth={1.6} />,
+  vidrieria:          <LayoutGrid size={18} strokeWidth={1.6} />,
+  limpieza:           <Sparkles size={18} strokeWidth={1.6} />,
+  otro:               <ClipboardList size={18} strokeWidth={1.6} />,
 };
+
+// Predefined schedule options
+const SCHEDULE_PRESETS = [
+  "Mañana (8am – 12pm)",
+  "Tarde (12pm – 6pm)",
+  "Todo el día",
+  "Fin de semana",
+  "Flexible",
+];
+
+// Predefined access note presets
+const ACCESS_PRESETS = [
+  "Tocar el timbre",
+  "Avisar en conserjería",
+  "Dejar nota en la puerta",
+  "Llamar antes de llegar",
+  "Acceso con seguridad",
+  "Acceso libre",
+];
 
 interface MaintenanceFormProps {
   resident: ResidentPublic;
@@ -100,31 +81,45 @@ export function MaintenanceForm({
   onSuccess,
   onBack,
 }: MaintenanceFormProps) {
-  const [workArea, setWorkArea] = useState<string>("");
-  const [description, setDescription] = useState("");
-  const [preferredTime, setPreferredTime] = useState("");
-  const [accessNotes, setAccessNotes] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [workArea,         setWorkArea]         = useState<string>("");
+  const [criticality,      setCriticality]      = useState<string>("");
+  const [description,      setDescription]      = useState("");
+  const [preferredTime,    setPreferredTime]     = useState("");
+  const [selectedPresets,  setSelectedPresets]  = useState<string[]>([]);
+  const [customNote,       setCustomNote]       = useState("");
+  const [isSubmitting,     setIsSubmitting]     = useState(false);
+  const [error,            setError]            = useState<string | null>(null);
 
   const descriptionLength = description.length;
-  const accessNotesLength = accessNotes.length;
+
+  // Combine presets + custom note into a single access notes string
+  const accessNotes = [
+    ...selectedPresets,
+    customNote.trim(),
+  ].filter(Boolean).join(". ");
 
   const isValid =
     workArea !== "" &&
+    criticality !== "" &&
     description.trim().length >= 10 &&
     descriptionLength <= 1000 &&
-    accessNotesLength <= 300;
+    accessNotes.length <= 300;
 
   const filledCount = [
     workArea !== "",
+    criticality !== "",
     description.trim().length >= 10,
   ].filter(Boolean).length;
-  const formProgress = (filledCount / 2) * 100;
+  const formProgress = (filledCount / 3) * 100;
+
+  const togglePreset = (preset: string) => {
+    setSelectedPresets((prev) =>
+      prev.includes(preset) ? prev.filter((p) => p !== preset) : [...prev, preset]
+    );
+  };
 
   const handleSubmit = async () => {
     if (!isValid || isSubmitting) return;
-
     setIsSubmitting(true);
     setError(null);
 
@@ -133,11 +128,12 @@ export function MaintenanceForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          resident_id: resident.id,
-          work_area: workArea,
-          description: description.trim(),
-          preferred_time: preferredTime.trim() || undefined,
-          access_notes: accessNotes.trim() || undefined,
+          resident_id:    resident.id,
+          work_area:      workArea,
+          criticality,
+          description:    description.trim(),
+          preferred_time: preferredTime || undefined,
+          access_notes:   accessNotes || undefined,
         }),
       });
 
@@ -148,15 +144,12 @@ export function MaintenanceForm({
       }
 
       const errorData: SolicitudErrorResponse = await res.json();
-
       switch (errorData.error.code) {
         case "RESIDENT_INACTIVE":
-          setError(
-            "Su cuenta fue desactivada. Contacte a la administración de TEPUY."
-          );
+          setError("Su cuenta fue desactivada. Contacte a la administración de TEPUY.");
           break;
         case "RESIDENT_NOT_FOUND":
-          setError("Residente no encontrado. Vuelva a iniciar el proceso.");
+          setError("Usuario no encontrado. Vuelva a iniciar el proceso.");
           break;
         case "VALIDATION_ERROR":
           setError(errorData.error.message);
@@ -171,156 +164,171 @@ export function MaintenanceForm({
     }
   };
 
-  // Character counter color
   const descCountColor =
-    descriptionLength > 1000
-      ? "text-red-500"
-      : descriptionLength > 800
-        ? "text-amber-500"
-        : "text-tepuy-400";
+    descriptionLength > 1000 ? "text-red-500"
+    : descriptionLength > 800  ? "text-amber-500"
+    : "text-tepuy-400";
 
-  const accessCountColor =
-    accessNotesLength > 300 ? "text-red-500" : "text-tepuy-400";
+  const fieldLabel = "text-[11px] font-bold text-tepuy-500 uppercase tracking-[0.08em] flex items-center gap-1.5";
 
   return (
     <div className="stagger-children space-y-5">
+
       {/* Header */}
       <div className="text-center space-y-1">
-        <h2 className="text-xl font-bold text-tepuy-900">
+        <h2 className="text-[20px] font-bold text-tepuy-900 tracking-tight">
           Solicitud de Mantenimiento
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Complete los datos de su solicitud
-        </p>
+        <p className="text-sm text-tepuy-400">Complete los datos de su solicitud</p>
       </div>
 
-      {/* Resident recap — starts collapsed, tap to expand */}
+      {/* Resident card */}
       <ResidentCard resident={resident} compact />
 
       {/* Form card */}
-      <div className="glass-card rounded-2xl p-5 space-y-5">
-        {/* Mini form progress */}
+      <div
+        className="rounded-2xl p-5 space-y-6 bg-white"
+        style={{
+          border: "1px solid oklch(0.92 0.020 170)",
+          boxShadow: "0 1px 3px oklch(0 0 0 / 0.04), 0 4px 16px oklch(0.48 0.125 170 / 0.06)",
+        }}
+      >
+
+        {/* Progress */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-tepuy-600 font-medium">
-              Campos requeridos
-            </span>
-            <span className="text-tepuy-400">{filledCount}/2</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Progreso</span>
+            <span className="text-[10px] font-bold text-tepuy-500 tabular-nums">{filledCount} / 3</span>
           </div>
           <div className="h-1 w-full rounded-full bg-tepuy-100 overflow-hidden">
             <div
               className="h-full rounded-full progress-fill"
               style={{
-                background:
-                  "linear-gradient(to right, oklch(0.68 0.14 170), oklch(0.58 0.14 170))",
+                background: "linear-gradient(90deg, oklch(0.56 0.140 170), oklch(0.67 0.135 170))",
                 width: `${formProgress}%`,
               }}
             />
           </div>
         </div>
 
-        {/* ─── Work Area — Grid Selector ─── */}
-        <div className="space-y-2.5">
-          <label className="text-sm font-semibold text-tepuy-800 flex items-center gap-1.5">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-tepuy-500"
+        {/* ─── Área de trabajo — Dropdown ─── */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label htmlFor="work-area-select" className={fieldLabel}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+              Área de trabajo
+            </label>
+            <span className="text-red-400 text-[10px] font-bold">Requerido</span>
+          </div>
+          <div className="relative">
+            {/* Leading icon — shows selected area icon or default */}
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-tepuy-400 pointer-events-none">
+              {workArea && WORK_AREA_ICONS[workArea]
+                ? WORK_AREA_ICONS[workArea]
+                : <Wrench size={18} strokeWidth={1.6} />
+              }
+            </div>
+            <select
+              id="work-area-select"
+              value={workArea}
+              disabled={isSubmitting}
+              onChange={(e) => { setWorkArea(e.target.value); if (error) setError(null); }}
+              className="w-full h-12 appearance-none rounded-xl border border-tepuy-200 bg-white pl-11 pr-10 text-[14px] text-tepuy-900 outline-none transition-all duration-150 focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 disabled:opacity-50 cursor-pointer"
             >
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-            </svg>
-            Área de trabajo
-            <span className="text-red-400 text-xs">*</span>
-          </label>
+              <option value="">Seleccionar área de trabajo...</option>
+              {orderedWorkAreas.map((value) => (
+                <option key={value} value={value}>
+                  {WORK_AREA_LABELS[value as keyof typeof WORK_AREA_LABELS]}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-tepuy-400 pointer-events-none">
+              <ChevronDown size={16} strokeWidth={2} />
+            </div>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {WorkArea.options.map((value) => {
-              const config = WORK_AREA_CONFIG[value];
-              const isSelected = workArea === value;
+        {/* ─── Criticidad ─── */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className={fieldLabel}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" x2="12" y1="8" y2="12" />
+                <line x1="12" x2="12.01" y1="16" y2="16" />
+              </svg>
+              Criticidad de Atención
+            </label>
+            <span className="text-red-400 text-[10px] font-bold">Requerido</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {Criticality.options.map((value) => {
+              const isSelected = criticality === value;
+              const isUrgente  = value === "urgente";
               return (
                 <button
                   key={value}
                   type="button"
                   disabled={isSubmitting}
-                  onClick={() => {
-                    setWorkArea(value);
-                    if (error) setError(null);
-                  }}
+                  onClick={() => { setCriticality(value); if (error) setError(null); }}
                   className={`
-                    relative flex flex-col items-center gap-1.5 rounded-xl p-3 border-2
-                    transition-all duration-200 cursor-pointer
+                    relative flex items-center gap-3 rounded-xl px-4 py-3
+                    border transition-all duration-150 cursor-pointer text-left
                     disabled:opacity-50 disabled:cursor-not-allowed
-                    ${
-                      isSelected
-                        ? `${config.bgActive} ${config.border} shadow-sm scale-[1.02]`
-                        : `${config.bg} border-transparent hover:border-tepuy-200 hover:shadow-sm`
+                    ${isSelected
+                      ? isUrgente
+                        ? "bg-red-50 border-red-400 border-[1.5px] shadow-sm"
+                        : "bg-sky-50 border-sky-400 border-[1.5px] shadow-sm"
+                      : "bg-white border-tepuy-100 hover:border-tepuy-300 hover:bg-tepuy-50/40"
                     }
                   `}
                 >
-                  {/* Selection indicator */}
+                  <div className={`shrink-0 ${
+                    isSelected ? (isUrgente ? "text-red-500" : "text-sky-500") : "text-tepuy-300"
+                  }`}>
+                    {isUrgente ? <AlertTriangle size={18} strokeWidth={1.6} /> : <Clock size={18} strokeWidth={1.6} />}
+                  </div>
+                  <div>
+                    <p className={`text-[11px] font-bold leading-tight ${
+                      isSelected ? (isUrgente ? "text-red-700" : "text-sky-700") : "text-tepuy-700"
+                    }`}>
+                      {isUrgente ? "Urgente" : "Importante"}
+                    </p>
+                    <p className={`text-[10px] leading-tight mt-0.5 ${
+                      isSelected ? (isUrgente ? "text-red-500" : "text-sky-500") : "text-tepuy-400"
+                    }`}>
+                      {isUrgente ? "Atención Inmediata" : "Atención Programada"}
+                    </p>
+                  </div>
                   {isSelected && (
-                    <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full flex items-center justify-center"
-                      style={{ background: "oklch(0.58 0.14 170)" }}>
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                    <div
+                      className="absolute top-1.5 right-1.5 h-3.5 w-3.5 rounded-full flex items-center justify-center"
+                      style={{ background: isUrgente ? "oklch(0.577 0.245 27)" : "oklch(0.58 0.14 230)" }}
+                    >
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M20 6 9 17l-5-5" />
                       </svg>
                     </div>
                   )}
-                  <span className="text-xl leading-none">{config.emoji}</span>
-                  <span
-                    className={`text-[11px] font-semibold leading-tight text-center ${
-                      isSelected ? "text-tepuy-800" : "text-tepuy-600"
-                    }`}
-                  >
-                    {WORK_AREA_LABELS[value]}
-                  </span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* ─── Description — Floating Label Style ─── */}
-        <div className="space-y-1.5">
+        {/* ─── Descripción ─── */}
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label
-              htmlFor="description"
-              className="text-sm font-semibold text-tepuy-800 flex items-center gap-1.5"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-tepuy-500"
-              >
+            <label htmlFor="description" className={fieldLabel}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
               </svg>
-              Descripción del problema
-              <span className="text-red-400 text-xs">*</span>
+              Detalles de la solicitud que deseas realizar
             </label>
-            <span
-              className={`text-xs font-medium tabular-nums transition-colors duration-200 ${descCountColor}`}
-            >
+            <span className={`text-[10px] font-bold tabular-nums ${descCountColor}`}>
               {descriptionLength}/1000
             </span>
           </div>
@@ -328,27 +336,15 @@ export function MaintenanceForm({
           <div className="relative">
             <textarea
               id="description"
-              placeholder="Describe el problema que necesitas reportar..."
+              placeholder="Describe los detalles de tu solicitud..."
               value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                if (error) setError(null);
-              }}
+              onChange={(e) => { setDescription(e.target.value); if (error) setError(null); }}
               disabled={isSubmitting}
               rows={4}
-              className="w-full rounded-xl border border-tepuy-200 bg-white/90 px-4 py-3 pl-11 text-base text-tepuy-900 placeholder:text-tepuy-300 resize-none outline-none transition-all duration-200 focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15 disabled:opacity-50"
+              className="w-full rounded-xl border border-tepuy-200 bg-white px-4 py-3 pl-11 text-[14px] text-tepuy-900 placeholder:text-tepuy-300 resize-none outline-none transition-all duration-150 focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 disabled:opacity-50"
             />
             <div className="absolute left-3.5 top-3.5 text-tepuy-300">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                 <polyline points="14 2 14 8 20 8" />
                 <line x1="16" x2="8" y1="13" y2="13" />
@@ -356,38 +352,22 @@ export function MaintenanceForm({
                 <line x1="10" x2="8" y1="9" y2="9" />
               </svg>
             </div>
-            {/* Progress bar under textarea */}
             <div className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-tepuy-100 overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${Math.min((descriptionLength / 1000) * 100, 100)}%`,
-                  background:
-                    descriptionLength > 1000
-                      ? "oklch(0.577 0.245 27)"
-                      : descriptionLength > 800
-                        ? "oklch(0.7 0.15 70)"
-                        : "oklch(0.58 0.14 170)",
+                  background: descriptionLength > 1000 ? "oklch(0.577 0.245 27)" : descriptionLength > 800 ? "oklch(0.7 0.15 70)" : "oklch(0.56 0.140 170)",
                 }}
               />
             </div>
           </div>
 
           {description.length > 0 && description.trim().length < 10 && (
-            <p className="text-xs text-amber-500 font-medium flex items-center gap-1">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+            <p className="text-[11px] text-amber-600 font-semibold flex items-center gap-1.5">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                <line x1="12" x2="12" y1="9" y2="13" />
-                <line x1="12" x2="12.01" y1="17" y2="17" />
+                <line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" />
               </svg>
               Mínimo 10 caracteres
             </p>
@@ -395,146 +375,123 @@ export function MaintenanceForm({
         </div>
 
         {/* ─── Optional fields ─── */}
-        <div className="border-t border-tepuy-100 pt-4 space-y-4">
-          <p className="text-xs font-medium text-tepuy-400 uppercase tracking-wider">
-            Campos opcionales
+        <div className="border-t border-tepuy-100 pt-5 space-y-5">
+          <p className="text-[10px] font-bold text-tepuy-300 uppercase tracking-widest">
+            Información adicional (opcional)
           </p>
 
-          {/* Preferred Time — with icon inside */}
-          <div className="space-y-1.5">
-            <label
-              htmlFor="preferred-time"
-              className="text-sm font-medium text-tepuy-700 flex items-center gap-1.5"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-tepuy-400"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
+          {/* Horario preferido — Chips + input libre */}
+          <div className="space-y-2">
+            <label className={fieldLabel}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
               </svg>
               Horario preferido
             </label>
-            <div className="relative">
-              <input
-                id="preferred-time"
-                type="text"
-                placeholder="Ej: Lunes a viernes, 9am - 12pm"
-                value={preferredTime}
-                onChange={(e) => setPreferredTime(e.target.value)}
-                disabled={isSubmitting}
-                className="w-full h-12 rounded-xl border border-tepuy-200 bg-white/90 px-4 pl-11 text-base text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all duration-200 focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15 disabled:opacity-50"
-              />
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-tepuy-300">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {SCHEDULE_PRESETS.map((preset) => {
+                const isActive = preferredTime === preset;
+                return (
+                  <button
+                    key={preset}
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => setPreferredTime(isActive ? "" : preset)}
+                    className={`
+                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold
+                      border transition-all duration-150 cursor-pointer
+                      disabled:opacity-50 disabled:cursor-not-allowed
+                      ${isActive
+                        ? "bg-tepuy-500 border-tepuy-500 text-white shadow-sm"
+                        : "bg-white border-tepuy-200 text-tepuy-600 hover:border-tepuy-400 hover:bg-tepuy-50"
+                      }
+                    `}
+                  >
+                    {isActive && (
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    )}
+                    {preset}
+                  </button>
+                );
+              })}
             </div>
+            <input
+              id="preferred-time"
+              type="text"
+              placeholder="O escribe un horario personalizado..."
+              value={SCHEDULE_PRESETS.includes(preferredTime) ? "" : preferredTime}
+              onChange={(e) => setPreferredTime(e.target.value)}
+              disabled={isSubmitting}
+              className="w-full h-10 rounded-xl border border-tepuy-200 bg-white px-3.5 text-[13px] text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all duration-150 focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 disabled:opacity-50"
+            />
           </div>
 
-          {/* Access Notes — with icon inside */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="access-notes"
-                className="text-sm font-medium text-tepuy-700 flex items-center gap-1.5"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-tepuy-400"
-                >
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                Notas de acceso
-              </label>
-              {accessNotesLength > 0 && (
-                <span
-                  className={`text-xs font-medium tabular-nums transition-colors duration-200 ${accessCountColor}`}
-                >
-                  {accessNotesLength}/300
-                </span>
-              )}
+          {/* Notas de acceso — Preset chips */}
+          <div className="space-y-2">
+            <label className={fieldLabel}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              Notas de acceso
+            </label>
+
+            {/* Preset chips */}
+            <div className="flex flex-wrap gap-2">
+              {ACCESS_PRESETS.map((preset) => {
+                const isActive = selectedPresets.includes(preset);
+                return (
+                  <button
+                    key={preset}
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => togglePreset(preset)}
+                    className={`
+                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold
+                      border transition-all duration-150 cursor-pointer
+                      disabled:opacity-50 disabled:cursor-not-allowed
+                      ${isActive
+                        ? "bg-tepuy-500 border-tepuy-500 text-white shadow-sm"
+                        : "bg-white border-tepuy-200 text-tepuy-600 hover:border-tepuy-400 hover:bg-tepuy-50"
+                      }
+                    `}
+                  >
+                    {isActive && (
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    )}
+                    {preset}
+                  </button>
+                );
+              })}
             </div>
-            <div className="relative">
-              <textarea
-                id="access-notes"
-                placeholder="Ej: Tocar el timbre, dejar aviso en conserjería..."
-                value={accessNotes}
-                onChange={(e) => setAccessNotes(e.target.value)}
-                disabled={isSubmitting}
-                rows={2}
-                className="w-full rounded-xl border border-tepuy-200 bg-white/90 px-4 py-3 pl-11 text-base text-tepuy-900 placeholder:text-tepuy-300 resize-none outline-none transition-all duration-200 focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15 disabled:opacity-50"
-              />
-              <div className="absolute left-3.5 top-3.5 text-tepuy-300">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </div>
-            </div>
+
+            {/* Optional custom note */}
+            <input
+              type="text"
+              placeholder="Otra indicación de acceso (opcional)..."
+              value={customNote}
+              onChange={(e) => setCustomNote(e.target.value)}
+              disabled={isSubmitting}
+              maxLength={200}
+              className="w-full h-10 rounded-xl border border-tepuy-200 bg-white px-3.5 text-[13px] text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all duration-150 focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 disabled:opacity-50"
+            />
           </div>
         </div>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-100 animate-slide-down">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-red-500 mt-0.5 shrink-0"
-          >
+        <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-100 animate-slide-down">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500 mt-0.5 shrink-0">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" x2="12" y1="8" y2="12" />
             <line x1="12" x2="12.01" y1="16" y2="16" />
           </svg>
-          <p
-            role="alert"
-            className="text-sm text-red-700 font-medium leading-snug"
-          >
-            {error}
-          </p>
+          <p role="alert" className="text-[13px] text-red-700 font-semibold leading-snug">{error}</p>
         </div>
       )}
 
@@ -542,45 +499,20 @@ export function MaintenanceForm({
       <button
         onClick={handleSubmit}
         disabled={!isValid || isSubmitting}
-        className="btn-tepuy w-full h-12 rounded-xl text-base font-semibold text-white flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+        className="btn-tepuy w-full h-12 rounded-xl text-[15px] font-bold text-white flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed tracking-wide"
       >
         {isSubmitting ? (
           <>
-            <svg
-              className="animate-spin h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
             Enviando solicitud...
           </>
         ) : (
           <>
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m22 2-7 20-4-9-9-4z" />
-              <path d="M22 2 11 13" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m22 2-7 20-4-9-9-4z" /><path d="M22 2 11 13" />
             </svg>
             Enviar solicitud
           </>
@@ -591,7 +523,7 @@ export function MaintenanceForm({
       <button
         onClick={onBack}
         disabled={isSubmitting}
-        className="w-full text-sm font-medium text-tepuy-500 hover:text-tepuy-700 transition-colors duration-200 py-2 cursor-pointer disabled:opacity-50"
+        className="w-full text-[13px] font-semibold text-tepuy-400 hover:text-tepuy-600 transition-colors duration-150 py-2 cursor-pointer disabled:opacity-50"
       >
         &larr; Volver a sus datos
       </button>

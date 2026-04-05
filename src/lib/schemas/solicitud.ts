@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+// --- Criticality Enum ---
+
+export const Criticality = z.enum(["urgente", "importante"]);
+export type Criticality = z.infer<typeof Criticality>;
+
+export const CRITICALITY_LABELS: Record<z.infer<typeof Criticality>, string> = {
+  urgente: "Urgente / Atención Inmediata",
+  importante: "Importante / Atención Programada",
+};
+
 // --- Work Area Enum ---
 // These are the maintenance categories available in TEPUY.
 // Must match the work_area_type enum that Daniel creates in DB (D-01).
@@ -42,6 +52,7 @@ export const WORK_AREA_LABELS: Record<WorkArea, string> = {
 export const CreateSolicitudBodySchema = z.object({
   resident_id: z.string().uuid("ID de residente inválido"),
   work_area: WorkArea,
+  criticality: Criticality,
   description: z
     .string()
     .min(10, "La descripción debe tener al menos 10 caracteres")

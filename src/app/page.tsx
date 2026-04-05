@@ -9,100 +9,79 @@ import type { CreateSolicitudResponse } from "@/lib/schemas/solicitud";
 
 type Step = "lookup" | "form" | "success";
 
-const STEP_CONFIG: Record<Step, { index: number; label: string }> = {
-  lookup: { index: 0, label: "Identificación" },
-  form: { index: 1, label: "Solicitud" },
-  success: { index: 2, label: "Confirmación" },
-};
+const STEPS: { key: Step; label: string }[] = [
+  { key: "lookup",  label: "Identificación" },
+  { key: "form",    label: "Solicitud" },
+  { key: "success", label: "Confirmación" },
+];
 
 export default function Home() {
-  const [step, setStep] = useState<Step>("lookup");
-  const [resident, setResident] = useState<ResidentPublic | null>(null);
-  const [solicitudResponse, setSolicitudResponse] =
-    useState<CreateSolicitudResponse | null>(null);
+  const [step, setStep]                       = useState<Step>("lookup");
+  const [resident, setResident]               = useState<ResidentPublic | null>(null);
+  const [solicitudResponse, setSolicitudResponse] = useState<CreateSolicitudResponse | null>(null);
 
-  const handleResidentFound = useCallback((found: ResidentPublic) => {
-    setResident(found);
-    setStep("form");
-  }, []);
+  const handleResidentFound    = useCallback((found: ResidentPublic) => { setResident(found); setStep("form"); }, []);
+  const handleSolicitudSuccess = useCallback((response: CreateSolicitudResponse) => { setSolicitudResponse(response); setStep("success"); }, []);
+  const handleBackToLookup     = useCallback(() => { setStep("lookup"); }, []);
+  const handleNewRequest       = useCallback(() => { setResident(null); setSolicitudResponse(null); setStep("lookup"); }, []);
 
-  const handleSolicitudSuccess = useCallback(
-    (response: CreateSolicitudResponse) => {
-      setSolicitudResponse(response);
-      setStep("success");
-    },
-    []
-  );
-
-  const handleBackToLookup = useCallback(() => {
-    setStep("lookup");
-  }, []);
-
-  const handleNewRequest = useCallback(() => {
-    setResident(null);
-    setSolicitudResponse(null);
-    setStep("lookup");
-  }, []);
-
-  const currentStep = STEP_CONFIG[step];
+  const currentIndex = STEPS.findIndex((s) => s.key === step);
 
   return (
-    <main className="flex-1 flex flex-col items-center px-4 py-6 sm:py-10">
-      <div className="w-full max-w-md space-y-6">
-        {/* ─── Progress indicator ─── */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            {Object.entries(STEP_CONFIG).map(([key, config]) => {
-              const isActive = currentStep.index === config.index;
-              const isDone = currentStep.index > config.index;
-              return (
-                <div key={key} className="flex items-center gap-1.5">
+    <main className="flex-1 flex flex-col items-center px-4 py-7 sm:py-10">
+      <div className="w-full max-w-md space-y-7">
+
+        {/* ─── Step indicator ─── */}
+        <div className="flex items-start justify-between">
+          {STEPS.map((s, i) => {
+            const isDone   = currentIndex > i;
+            const isActive = currentIndex === i;
+            return (
+              <div key={s.key} className="flex items-center flex-1">
+                {/* Step node */}
+                <div className="flex flex-col items-center gap-1.5 shrink-0">
                   <div
                     className={`
-                      flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold
-                      transition-all duration-500
-                      ${
-                        isDone
-                          ? "bg-tepuy-500 text-white scale-90"
-                          : isActive
-                            ? "bg-tepuy-500 text-white shadow-md shadow-tepuy-500/30 scale-110"
-                            : "bg-tepuy-100 text-tepuy-400"
-                      }
+                      h-7 w-7 rounded-full flex items-center justify-center
+                      text-[11px] font-bold border-2 transition-all duration-400
+                      ${isDone
+                        ? "border-tepuy-500 bg-tepuy-500 text-white"
+                        : isActive
+                          ? "border-tepuy-500 bg-white text-tepuy-600 shadow-sm"
+                          : "border-tepuy-200 bg-white text-tepuy-300"}
                     `}
+                    style={isActive ? { boxShadow: "0 0 0 4px oklch(0.56 0.140 170 / 0.12)" } : undefined}
                   >
                     {isDone ? (
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M20 6 9 17l-5-5" />
                       </svg>
                     ) : (
-                      config.index + 1
+                      i + 1
                     )}
                   </div>
                   <span
-                    className={`text-xs font-medium transition-colors duration-300 ${
-                      isActive
-                        ? "text-tepuy-700"
-                        : isDone
-                          ? "text-tepuy-500"
-                          : "text-tepuy-300"
+                    className={`text-[10px] font-semibold tracking-wide whitespace-nowrap transition-colors duration-300 ${
+                      isActive ? "text-tepuy-700" : isDone ? "text-tepuy-500" : "text-tepuy-300"
                     }`}
                   >
-                    {config.label}
+                    {s.label}
                   </span>
                 </div>
-              );
-            })}
-          </div>
-          {/* Progress bar */}
-          <div className="h-1 w-full rounded-full bg-tepuy-100 overflow-hidden">
-            <div
-              className="h-full rounded-full progress-fill"
-              style={{
-                background: "linear-gradient(to right, oklch(0.68 0.14 170), oklch(0.58 0.14 170))",
-                width: `${((currentStep.index + 1) / 3) * 100}%`,
-              }}
-            />
-          </div>
+
+                {/* Connector line between steps */}
+                {i < STEPS.length - 1 && (
+                  <div className="flex-1 h-px mx-2 mb-4 transition-colors duration-500 rounded-full"
+                    style={{
+                      background: currentIndex > i
+                        ? "oklch(0.56 0.140 170)"
+                        : "oklch(0.92 0.020 170)",
+                    }}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* ─── Step content ─── */}

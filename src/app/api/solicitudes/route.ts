@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { resident_id, work_area, description, preferred_time, access_notes } =
+    const { resident_id, work_area, criticality, description, preferred_time, access_notes } =
       parsed.data;
 
     // 2. Re-validate resident exists and is active (security: don't trust client state)
@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
         tlf_usuario: resident.tlf_usuario,
         gerencia: resident.gerencia,
         work_area,
+        criticality,
         description,
         preferred_time: preferred_time || null,
         access_notes: access_notes || null,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { WORK_AREA_LABELS } from "@/lib/schemas/solicitud";
 
@@ -29,31 +29,137 @@ interface Solicitud {
 }
 
 const REQUEST_STATUS_LABELS: Record<RequestStatus, string> = {
-  pendiente:   "Pendiente",
-  en_proceso:  "En proceso",
-  completado:  "Completado",
-  cancelado:   "Cancelado",
+  pendiente:  "Pendiente",
+  en_proceso: "En proceso",
+  completado: "Completado",
+  cancelado:  "Cancelado",
 };
 
 const REQUEST_STATUS_STYLES: Record<RequestStatus, string> = {
-  pendiente:  "bg-amber-50 text-amber-700",
-  en_proceso: "bg-blue-50 text-blue-700",
-  completado: "bg-emerald-50 text-emerald-700",
-  cancelado:  "bg-red-50 text-red-600",
+  pendiente:  "bg-amber-50  text-amber-700  border border-amber-200",
+  en_proceso: "bg-blue-50   text-blue-700   border border-blue-200",
+  completado: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  cancelado:  "bg-red-50    text-red-600    border border-red-200",
 };
 
 const REQUEST_STATUS_DOT: Record<RequestStatus, string> = {
   pendiente:  "bg-amber-400",
-  en_proceso: "bg-blue-400",
+  en_proceso: "bg-blue-500",
   completado: "bg-emerald-500",
   cancelado:  "bg-red-400",
 };
 
 const PER_PAGE = 25;
 
-// ─── Edit Modal ─────────────────────────────────────────────────────────────
+// ─── Quick Status Dropdown ────────────────────────────────────────────────────
 
-function EditSolicitudModal({
+function QuickStatusMenu({
+  solicitud,
+  onUpdated,
+  onError,
+}: {
+  solicitud: Solicitud;
+  onUpdated: (s: Solicitud) => void;
+  onError: (msg: string) => void;
+}) {
+  const [isOpen, setIsOpen]   = useState(false);
+  const [isBusy, setIsBusy]   = useState(false);
+  const menuRef               = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [isOpen]);
+
+  const handleChange = async (newStatus: RequestStatus) => {
+    if (newStatus === solicitud.request_status) { setIsOpen(false); return; }
+    setIsBusy(true);
+    try {
+      const res = await fetch(`/api/admin/solicitudes/${solicitud.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request_status: newStatus }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        onUpdated(data.solicitud);
+      } else {
+        const data = await res.json();
+        onError(data.error?.message ?? "Error al actualizar.");
+      }
+    } catch {
+      onError("Error de conexión.");
+    } finally {
+      setIsBusy(false);
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div ref={menuRef} className="relative inline-block">
+      <button
+        type="button"
+        disabled={isBusy}
+        onClick={() => setIsOpen((o) => !o)}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer disabled:opacity-60 ${REQUEST_STATUS_STYLES[solicitud.request_status]}`}
+      >
+        {isBusy ? (
+          <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        ) : (
+          <span className={`h-1.5 w-1.5 rounded-full ${REQUEST_STATUS_DOT[solicitud.request_status]}`} />
+        )}
+        {REQUEST_STATUS_LABELS[solicitud.request_status]}
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div
+          className="absolute top-full left-0 mt-1.5 z-30 rounded-xl overflow-hidden min-w-[156px] animate-slide-down"
+          style={{
+            background: "white",
+            border: "1px solid oklch(0.92 0.020 170)",
+            boxShadow: "0 4px 16px oklch(0 0 0 / 0.10), 0 1px 4px oklch(0 0 0 / 0.06)",
+          }}
+        >
+          {(Object.keys(REQUEST_STATUS_LABELS) as RequestStatus[]).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => handleChange(s)}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-xs font-semibold transition-colors hover:bg-tepuy-50 ${
+                s === solicitud.request_status ? "text-tepuy-600 bg-tepuy-50/60" : "text-tepuy-700"
+              }`}
+            >
+              <span className={`h-2 w-2 rounded-full shrink-0 ${REQUEST_STATUS_DOT[s]}`} />
+              {REQUEST_STATUS_LABELS[s]}
+              {s === solicitud.request_status && (
+                <svg className="ml-auto" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Detail / Edit Modal ──────────────────────────────────────────────────────
+
+function SolicitudModal({
   solicitud,
   onClose,
   onUpdated,
@@ -64,8 +170,8 @@ function EditSolicitudModal({
   onUpdated: (s: Solicitud) => void;
   onError: (msg: string) => void;
 }) {
-  const [status, setStatus]     = useState<RequestStatus>(solicitud.request_status);
-  const [notes, setNotes]       = useState(solicitud.admin_notes ?? "");
+  const [status, setStatus]   = useState<RequestStatus>(solicitud.request_status);
+  const [notes, setNotes]     = useState(solicitud.admin_notes ?? "");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
@@ -76,14 +182,12 @@ function EditSolicitudModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ request_status: status, admin_notes: notes }),
       });
-
       if (res.ok) {
         const data = await res.json();
         onUpdated(data.solicitud);
         onClose();
         return;
       }
-
       const data = await res.json();
       onError(data.error?.message ?? "Error al actualizar la solicitud.");
     } catch {
@@ -93,103 +197,124 @@ function EditSolicitudModal({
     }
   };
 
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleString("es-VE", {
+      day: "2-digit", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+
+  const DetailRow = ({ label, value }: { label: string; value?: string | null }) =>
+    value ? (
+      <div className="flex flex-col gap-0.5 py-2.5 border-b border-tepuy-50 last:border-0">
+        <span className="text-[9px] font-bold text-tepuy-400 uppercase tracking-widest">{label}</span>
+        <span className="text-[13px] font-medium text-tepuy-900 leading-snug">{value}</span>
+      </div>
+    ) : null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg glass-card rounded-2xl p-6 space-y-5 animate-slide-up max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-tepuy-900">Editar solicitud</h2>
-          <button onClick={onClose} className="text-tepuy-400 hover:text-tepuy-600 cursor-pointer">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div
+        className="relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl overflow-hidden animate-slide-up max-h-[92dvh] flex flex-col"
+        style={{ background: "white", boxShadow: "0 -4px 32px oklch(0 0 0 / 0.15), 0 1px 0 oklch(0.92 0.020 170)" }}
+      >
+        {/* Drag handle (mobile) */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+          <div className="h-1 w-10 rounded-full bg-tepuy-200" />
+        </div>
+
+        {/* Modal header */}
+        <div
+          className="flex items-center justify-between px-5 py-4 border-b border-tepuy-100"
+          style={{ background: "linear-gradient(135deg, oklch(0.40 0.105 170), oklch(0.56 0.140 170))" }}
+        >
+          <div>
+            <h2 className="text-[15px] font-bold text-white tracking-tight">
+              {solicitud.nombre_usuario || "Sin nombre"}
+            </h2>
+            <p className="text-white/60 text-[11px] font-mono mt-0.5">
+              CI {solicitud.ci_usuario}
+              {solicitud.descripcion_inmueble ? ` · ${solicitud.descripcion_inmueble}` : ""}
+              {solicitud.nro_apto ? ` · Apto ${solicitud.nro_apto}` : ""}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center text-white hover:bg-white/25 transition-colors cursor-pointer"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18" /><path d="m6 6 12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Info read-only */}
-        <div className="bg-tepuy-50/60 rounded-xl p-4 space-y-2 text-sm">
-          <div className="flex gap-3">
-            <span className="text-tepuy-400 w-24 shrink-0">CI</span>
-            <span className="font-mono font-semibold text-tepuy-800">{solicitud.ci_usuario}</span>
-          </div>
-          <div className="flex gap-3">
-            <span className="text-tepuy-400 w-24 shrink-0">Nombre</span>
-            <span className="text-tepuy-700">{solicitud.nombre_usuario || "—"}</span>
-          </div>
-          <div className="flex gap-3">
-            <span className="text-tepuy-400 w-24 shrink-0">Inmueble</span>
-            <span className="text-tepuy-700">{solicitud.descripcion_inmueble || "—"}{solicitud.nro_apto ? ` · Apto ${solicitud.nro_apto}` : ""}</span>
-          </div>
-          <div className="flex gap-3">
-            <span className="text-tepuy-400 w-24 shrink-0">Área</span>
-            <span className="text-tepuy-700">{WORK_AREA_LABELS[solicitud.work_area as keyof typeof WORK_AREA_LABELS] ?? solicitud.work_area}</span>
-          </div>
-          <div className="flex gap-3">
-            <span className="text-tepuy-400 w-24 shrink-0">Descripción</span>
-            <span className="text-tepuy-700 leading-relaxed">{solicitud.description}</span>
-          </div>
-          {solicitud.preferred_time && (
-            <div className="flex gap-3">
-              <span className="text-tepuy-400 w-24 shrink-0">Horario</span>
-              <span className="text-tepuy-700">{solicitud.preferred_time}</span>
-            </div>
-          )}
-          {solicitud.access_notes && (
-            <div className="flex gap-3">
-              <span className="text-tepuy-400 w-24 shrink-0">Acceso</span>
-              <span className="text-tepuy-700">{solicitud.access_notes}</span>
-            </div>
-          )}
-        </div>
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
 
-        {/* Status selector */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-tepuy-800">Estado</label>
-          <div className="grid grid-cols-2 gap-2">
-            {(Object.keys(REQUEST_STATUS_LABELS) as RequestStatus[]).map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setStatus(s)}
-                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer ${
-                  status === s
-                    ? "border-tepuy-400 bg-tepuy-50 text-tepuy-800 shadow-sm"
-                    : "border-transparent bg-tepuy-50/50 text-tepuy-600 hover:border-tepuy-200"
-                }`}
-              >
-                <span className={`h-2 w-2 rounded-full shrink-0 ${REQUEST_STATUS_DOT[s]}`} />
-                {REQUEST_STATUS_LABELS[s]}
-              </button>
-            ))}
+          {/* Key details */}
+          <div
+            className="rounded-xl px-4 py-1"
+            style={{ background: "oklch(0.978 0.004 200)", border: "1px solid oklch(0.92 0.020 170)" }}
+          >
+            <DetailRow label="Área de trabajo" value={WORK_AREA_LABELS[solicitud.work_area as keyof typeof WORK_AREA_LABELS] ?? solicitud.work_area} />
+            <DetailRow label="Descripción" value={solicitud.description} />
+            <DetailRow label="Horario preferido" value={solicitud.preferred_time} />
+            <DetailRow label="Notas de acceso" value={solicitud.access_notes} />
+            <DetailRow label="Teléfono" value={solicitud.tlf_usuario} />
+            <DetailRow label="Fecha de solicitud" value={formatDate(solicitud.created_at)} />
+            {solicitud.external_reference && (
+              <DetailRow label="Referencia externa" value={solicitud.external_reference} />
+            )}
           </div>
-        </div>
 
-        {/* Admin notes */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-tepuy-800">Notas internas</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            placeholder="Observaciones internas del administrador..."
-            className="w-full rounded-xl border border-tepuy-200 bg-white/90 px-4 py-3 text-sm text-tepuy-900 placeholder:text-tepuy-300 resize-none outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
-          />
+          {/* Status selector */}
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Cambiar estado</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(Object.keys(REQUEST_STATUS_LABELS) as RequestStatus[]).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStatus(s)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all cursor-pointer text-[12px] font-semibold ${
+                    status === s
+                      ? "border-tepuy-500 bg-tepuy-50 text-tepuy-800 shadow-sm"
+                      : "border-tepuy-100 bg-white text-tepuy-500 hover:border-tepuy-300"
+                  }`}
+                >
+                  <span className={`h-2 w-2 rounded-full shrink-0 ${REQUEST_STATUS_DOT[s]}`} />
+                  {REQUEST_STATUS_LABELS[s]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Admin notes */}
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Notas internas</p>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder="Observaciones internas del administrador..."
+              className="w-full rounded-xl border border-tepuy-200 bg-white px-4 py-3 text-[13px] text-tepuy-900 placeholder:text-tepuy-300 resize-none outline-none transition-all focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12"
+            />
+          </div>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-1">
+        <div className="px-5 py-4 border-t border-tepuy-100 flex gap-2">
           <button
             onClick={onClose}
             disabled={isSaving}
-            className="flex-1 h-10 rounded-xl border border-tepuy-200 text-sm font-medium text-tepuy-600 hover:bg-tepuy-50 transition-colors cursor-pointer disabled:opacity-50"
+            className="flex-1 h-11 rounded-xl border border-tepuy-200 text-[13px] font-semibold text-tepuy-600 hover:bg-tepuy-50 transition-colors cursor-pointer disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 h-10 rounded-xl btn-tepuy text-sm font-semibold text-white transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-2 h-11 px-6 rounded-xl btn-tepuy text-[13px] font-bold text-white cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isSaving ? (
               <>
@@ -207,27 +332,27 @@ function EditSolicitudModal({
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function AdminSolicitudesPage() {
   const router = useRouter();
 
-  const [solicitudes, setSolicitudes]   = useState<Solicitud[]>([]);
-  const [total, setTotal]               = useState(0);
-  const [totalPages, setTotalPages]     = useState(0);
-  const [page, setPage]                 = useState(1);
-  const [isLoading, setIsLoading]       = useState(true);
+  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
+  const [total, setTotal]             = useState(0);
+  const [totalPages, setTotalPages]   = useState(0);
+  const [page, setPage]               = useState(1);
+  const [isLoading, setIsLoading]     = useState(true);
 
   // Filters
-  const [search, setSearch]                       = useState("");
-  const [residenciaFilter, setResidenciaFilter]   = useState("");
-  const [workAreaFilter, setWorkAreaFilter]       = useState("");
-  const [statusFilter, setStatusFilter]           = useState<string>("");
-  const [debouncedSearch, setDebouncedSearch]     = useState("");
+  const [search,              setSearch]              = useState("");
+  const [residenciaFilter,    setResidenciaFilter]    = useState("");
+  const [workAreaFilter,      setWorkAreaFilter]      = useState("");
+  const [statusFilter,        setStatusFilter]        = useState<string>("");
+  const [debouncedSearch,     setDebouncedSearch]     = useState("");
   const [debouncedResidencia, setDebouncedResidencia] = useState("");
 
   // Modal
-  const [editingSolicitud, setEditingSolicitud] = useState<Solicitud | null>(null);
+  const [viewingSolicitud, setViewingSolicitud] = useState<Solicitud | null>(null);
 
   // Toast
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -237,7 +362,6 @@ export default function AdminSolicitudesPage() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // Debounce
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
     return () => clearTimeout(t);
@@ -254,13 +378,12 @@ export default function AdminSolicitudesPage() {
       const params = new URLSearchParams();
       params.set("page", String(page));
       params.set("per_page", String(PER_PAGE));
-      if (debouncedSearch)    params.set("search", debouncedSearch);
+      if (debouncedSearch)     params.set("search", debouncedSearch);
       if (debouncedResidencia) params.set("residencia", debouncedResidencia);
-      if (workAreaFilter)     params.set("work_area", workAreaFilter);
-      if (statusFilter)       params.set("request_status", statusFilter);
+      if (workAreaFilter)      params.set("work_area", workAreaFilter);
+      if (statusFilter)        params.set("request_status", statusFilter);
 
       const res = await fetch(`/api/admin/solicitudes?${params.toString()}`);
-
       if (res.status === 401) { router.replace("/admin/login"); return; }
       if (!res.ok) throw new Error("Error fetching");
 
@@ -280,52 +403,82 @@ export default function AdminSolicitudesPage() {
   const handleUpdated = (s: Solicitud) => {
     showToast("Solicitud actualizada.", "success");
     setSolicitudes((prev) => prev.map((x) => (x.id === s.id ? s : x)));
+    // Update modal if open
+    if (viewingSolicitud?.id === s.id) setViewingSolicitud(s);
   };
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString("es-VE", { day: "2-digit", month: "short", year: "numeric" });
 
+  const hasFilters = debouncedSearch || debouncedResidencia || workAreaFilter || statusFilter;
+
   return (
-    <main className="flex-1 flex flex-col min-h-0">
-      {/* Header */}
-      <div className="border-b border-tepuy-200/60 bg-white/80 backdrop-blur-md px-4 py-3">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+    <main className="flex-1 flex flex-col min-h-0 bg-tepuy-mesh">
+
+      {/* ─── Top bar ─── */}
+      <div className="border-b border-tepuy-100 bg-white px-4 py-3"
+        style={{ boxShadow: "0 1px 0 oklch(0.92 0.020 170), 0 2px 6px oklch(0 0 0 / 0.03)" }}>
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+
+          {/* Left: page title */}
+          <div className="flex items-center gap-2.5">
             <div
-              className="h-7 w-7 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, oklch(0.50 0.13 170), oklch(0.43 0.11 170))" }}
+              className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "linear-gradient(145deg, oklch(0.56 0.140 170), oklch(0.40 0.105 170))", boxShadow: "0 1px 3px oklch(0.48 0.125 170 / 0.35)" }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                 <polyline points="14 2 14 8 20 8" />
                 <line x1="16" x2="8" y1="13" y2="13" />
                 <line x1="16" x2="8" y1="17" y2="17" />
               </svg>
             </div>
-            <h1 className="text-base font-bold text-tepuy-900">Solicitudes</h1>
-            <span className="text-xs font-medium text-tepuy-400 bg-tepuy-50 px-2 py-0.5 rounded-full">
-              {total}
-            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-[14px] font-bold text-tepuy-900 tracking-tight">Solicitudes</h1>
+                {!isLoading && (
+                  <span className="text-[11px] font-bold text-tepuy-500 bg-tepuy-50 border border-tepuy-100 px-2 py-0.5 rounded-full tabular-nums">
+                    {total}
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-tepuy-400 font-medium">Panel de administración</p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Right: nav buttons */}
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => router.push("/admin")}
-              className="inline-flex items-center gap-1 rounded-lg border border-tepuy-200 px-2.5 py-1.5 text-xs font-medium text-tepuy-600 transition-colors duration-200 hover:bg-tepuy-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-tepuy-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-tepuy-600 transition-colors hover:bg-tepuy-50 hover:border-tepuy-300 cursor-pointer"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
-              Residentes
+              Usuarios
+            </button>
+            <button
+              onClick={() => router.push("/admin/qr")}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-tepuy-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-tepuy-600 transition-colors hover:bg-tepuy-50 hover:border-tepuy-300 cursor-pointer"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="5" height="5" x="3" y="3" rx="1" /><rect width="5" height="5" x="16" y="3" rx="1" />
+                <rect width="5" height="5" x="3" y="16" rx="1" />
+                <path d="M21 16h-3a2 2 0 0 0-2 2v3" /><path d="M21 21v.01" />
+                <path d="M12 7v3a2 2 0 0 1-2 2H7" /><path d="M3 12h.01" />
+                <path d="M12 3h.01" /><path d="M7 21v.01" /><path d="M12 18v.01" />
+                <path d="M17 12h.01" /><path d="M12 12v.01" />
+              </svg>
+              QR
             </button>
             <button
               onClick={async () => { await fetch("/api/admin/logout", { method: "DELETE" }); router.push("/admin/login"); }}
-              className="text-xs font-medium text-tepuy-500 hover:text-red-500 transition-colors duration-200 flex items-center gap-1 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold text-tepuy-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 border border-transparent transition-colors cursor-pointer"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" x2="9" y1="12" y2="12" />
@@ -336,13 +489,14 @@ export default function AdminSolicitudesPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="px-4 py-4">
-        <div className="max-w-6xl mx-auto space-y-3">
-          <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+      {/* ─── Filters ─── */}
+      <div className="px-4 py-3">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row gap-2 flex-wrap items-center">
+
             {/* Search CI */}
-            <div className="relative flex-1 min-w-[160px]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-tepuy-300">
+            <div className="relative flex-1 min-w-[180px]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-tepuy-400">
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
               </svg>
               <input
@@ -350,30 +504,30 @@ export default function AdminSolicitudesPage() {
                 placeholder="Buscar por CI..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 pl-9 pr-4 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                className="w-full h-9 pl-9 pr-3.5 rounded-lg border border-tepuy-200 bg-white text-[13px] text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12"
               />
             </div>
 
             {/* Residencia */}
             <div className="relative">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-tepuy-300">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-tepuy-400">
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                 <polyline points="9 22 9 12 15 12 15 22" />
               </svg>
               <input
                 type="text"
-                placeholder="Filtrar por residencia..."
+                placeholder="Residencia..."
                 value={residenciaFilter}
                 onChange={(e) => setResidenciaFilter(e.target.value)}
-                className="w-full sm:w-44 h-10 pl-9 pr-4 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                className="w-full sm:w-40 h-9 pl-9 pr-3.5 rounded-lg border border-tepuy-200 bg-white text-[13px] text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12"
               />
             </div>
 
-            {/* Área de trabajo */}
+            {/* Work area */}
             <select
               value={workAreaFilter}
               onChange={(e) => { setWorkAreaFilter(e.target.value); setPage(1); }}
-              className="h-10 px-3 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-700 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15 cursor-pointer"
+              className="h-9 px-3 rounded-lg border border-tepuy-200 bg-white text-[13px] text-tepuy-700 outline-none transition-all focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 cursor-pointer"
             >
               <option value="">Todas las áreas</option>
               {Object.entries(WORK_AREA_LABELS).map(([val, label]) => (
@@ -381,87 +535,115 @@ export default function AdminSolicitudesPage() {
               ))}
             </select>
 
-            {/* Estado de solicitud */}
+            {/* Status */}
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="h-10 px-3 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-700 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15 cursor-pointer"
+              className="h-9 px-3 rounded-lg border border-tepuy-200 bg-white text-[13px] text-tepuy-700 outline-none transition-all focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 cursor-pointer"
             >
               <option value="">Todos los estados</option>
               {(Object.keys(REQUEST_STATUS_LABELS) as RequestStatus[]).map((s) => (
                 <option key={s} value={s}>{REQUEST_STATUS_LABELS[s]}</option>
               ))}
             </select>
+
+            {/* Clear filters */}
+            {hasFilters && (
+              <button
+                onClick={() => { setSearch(""); setResidenciaFilter(""); setWorkAreaFilter(""); setStatusFilter(""); setPage(1); }}
+                className="h-9 px-3 rounded-lg text-[12px] font-semibold text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+              >
+                Limpiar filtros
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Table */}
+      {/* ─── Table ─── */}
       <div className="flex-1 px-4 pb-4 overflow-auto">
         <div className="max-w-6xl mx-auto">
-          <div className="glass-card rounded-2xl overflow-hidden">
+          <div
+            className="rounded-2xl overflow-hidden bg-white"
+            style={{ border: "1px solid oklch(0.92 0.020 170)", boxShadow: "0 1px 3px oklch(0 0 0 / 0.04), 0 4px 16px oklch(0.48 0.125 170 / 0.05)" }}
+          >
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-tepuy-100">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Fecha</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">CI</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden sm:table-cell">Nombre</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden md:table-cell">Inmueble</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden lg:table-cell">Área</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Estado</th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Acciones</th>
+                  <tr style={{ background: "oklch(0.978 0.004 200)", borderBottom: "1px solid oklch(0.92 0.020 170)" }}>
+                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Fecha</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">CI</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden sm:table-cell">Nombre</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden md:table-cell">Inmueble</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden lg:table-cell">Área</th>
+                    <th className="text-center px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Estado</th>
+                    <th className="text-right px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-12 text-center">
+                      <td colSpan={7} className="px-4 py-14 text-center">
                         <div className="flex items-center justify-center gap-2 text-tepuy-400">
                           <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                           </svg>
-                          Cargando solicitudes...
+                          <span className="text-[13px] font-medium">Cargando solicitudes...</span>
                         </div>
                       </td>
                     </tr>
                   ) : solicitudes.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-12 text-center text-tepuy-400">
-                        {debouncedSearch || debouncedResidencia || workAreaFilter || statusFilter
+                      <td colSpan={7} className="px-4 py-14 text-center text-[13px] text-tepuy-400">
+                        {hasFilters
                           ? "No se encontraron solicitudes con esos filtros."
                           : "No hay solicitudes registradas."}
                       </td>
                     </tr>
                   ) : (
                     solicitudes.map((s) => (
-                      <tr key={s.id} className="border-b border-tepuy-50 hover:bg-tepuy-50/50 transition-colors">
-                        <td className="px-4 py-3 text-tepuy-500 text-xs whitespace-nowrap">{formatDate(s.created_at)}</td>
-                        <td className="px-4 py-3 font-mono font-semibold text-tepuy-800">{s.ci_usuario}</td>
-                        <td className="px-4 py-3 text-tepuy-700 hidden sm:table-cell">{s.nombre_usuario || "—"}</td>
-                        <td className="px-4 py-3 text-tepuy-600 hidden md:table-cell">
-                          {s.descripcion_inmueble || "—"}
-                          {s.nro_apto && <span className="text-tepuy-400 ml-1">· {s.nro_apto}</span>}
+                      <tr
+                        key={s.id}
+                        className="border-b border-tepuy-50 hover:bg-tepuy-50/40 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-tepuy-400 text-[12px] whitespace-nowrap font-medium">
+                          {formatDate(s.created_at)}
                         </td>
-                        <td className="px-4 py-3 text-tepuy-600 hidden lg:table-cell">
+                        <td className="px-4 py-3 font-mono font-bold text-tepuy-800 text-[13px]">
+                          {s.ci_usuario}
+                        </td>
+                        <td className="px-4 py-3 text-tepuy-700 text-[13px] hidden sm:table-cell">
+                          {s.nombre_usuario || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-tepuy-600 text-[13px] hidden md:table-cell">
+                          {s.descripcion_inmueble || "—"}
+                          {s.nro_apto && (
+                            <span className="text-tepuy-400 ml-1 font-medium">· {s.nro_apto}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-tepuy-600 text-[13px] hidden lg:table-cell">
                           {WORK_AREA_LABELS[s.work_area as keyof typeof WORK_AREA_LABELS] ?? s.work_area}
                         </td>
+                        {/* Status — clickable dropdown */}
                         <td className="px-4 py-3 text-center">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${REQUEST_STATUS_STYLES[s.request_status]}`}>
-                            <span className={`h-1.5 w-1.5 rounded-full ${REQUEST_STATUS_DOT[s.request_status]}`} />
-                            {REQUEST_STATUS_LABELS[s.request_status]}
-                          </span>
+                          <QuickStatusMenu
+                            solicitud={s}
+                            onUpdated={handleUpdated}
+                            onError={(msg) => showToast(msg, "error")}
+                          />
                         </td>
+                        {/* Actions */}
                         <td className="px-4 py-3 text-right">
                           <button
-                            onClick={() => setEditingSolicitud(s)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-tepuy-600 hover:text-tepuy-800 hover:bg-tepuy-100 transition-colors cursor-pointer"
+                            onClick={() => setViewingSolicitud(s)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-tepuy-200 text-[12px] font-semibold text-tepuy-600 hover:bg-tepuy-50 hover:border-tepuy-300 transition-colors cursor-pointer"
                           >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                              <circle cx="12" cy="12" r="3" />
                             </svg>
-                            Editar
+                            Ver detalle
                           </button>
                         </td>
                       </tr>
@@ -473,24 +655,44 @@ export default function AdminSolicitudesPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-tepuy-100">
-                <p className="text-xs text-tepuy-400">
-                  Página {page} de {totalPages} ({total} registros)
+              <div
+                className="flex items-center justify-between px-5 py-3 border-t border-tepuy-100"
+                style={{ background: "oklch(0.978 0.004 200)" }}
+              >
+                <p className="text-[11px] text-tepuy-400 font-medium">
+                  Página {page} de {totalPages} &middot; {total} registros
                 </p>
                 <div className="flex items-center gap-1">
                   <button
+                    onClick={() => setPage(1)}
+                    disabled={page <= 1}
+                    className="h-8 w-8 rounded-lg text-[11px] font-bold text-tepuy-500 hover:bg-tepuy-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center justify-center"
+                  >
+                    «
+                  </button>
+                  <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="h-8 px-3 rounded-lg text-xs font-medium text-tepuy-600 hover:bg-tepuy-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    className="h-8 px-3 rounded-lg text-[12px] font-semibold text-tepuy-600 hover:bg-tepuy-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   >
                     Anterior
                   </button>
+                  <span className="h-8 px-3 flex items-center text-[12px] font-bold text-tepuy-700 bg-tepuy-100 rounded-lg tabular-nums">
+                    {page}
+                  </span>
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
-                    className="h-8 px-3 rounded-lg text-xs font-medium text-tepuy-600 hover:bg-tepuy-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    className="h-8 px-3 rounded-lg text-[12px] font-semibold text-tepuy-600 hover:bg-tepuy-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   >
                     Siguiente
+                  </button>
+                  <button
+                    onClick={() => setPage(totalPages)}
+                    disabled={page >= totalPages}
+                    className="h-8 w-8 rounded-lg text-[11px] font-bold text-tepuy-500 hover:bg-tepuy-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center justify-center"
+                  >
+                    »
                   </button>
                 </div>
               </div>
@@ -499,11 +701,11 @@ export default function AdminSolicitudesPage() {
         </div>
       </div>
 
-      {/* Edit Modal */}
-      {editingSolicitud && (
-        <EditSolicitudModal
-          solicitud={editingSolicitud}
-          onClose={() => setEditingSolicitud(null)}
+      {/* Detail/Edit Modal */}
+      {viewingSolicitud && (
+        <SolicitudModal
+          solicitud={viewingSolicitud}
+          onClose={() => setViewingSolicitud(null)}
           onUpdated={handleUpdated}
           onError={(msg) => showToast(msg, "error")}
         />
@@ -511,9 +713,14 @@ export default function AdminSolicitudesPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
-          <div className={`flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"}`}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <div className="fixed bottom-5 right-5 z-50 animate-slide-up">
+          <div
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-[13px] font-semibold ${
+              toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
+            }`}
+            style={{ boxShadow: "0 4px 16px oklch(0 0 0 / 0.20)" }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               {toast.type === "success" ? (
                 <path d="M20 6 9 17l-5-5" />
               ) : (

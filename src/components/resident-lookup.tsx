@@ -16,10 +16,10 @@ interface ResidentLookupProps {
 }
 
 export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
-  const [ci, setCi] = useState("");
+  const [ci, setCi]           = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError]     = useState<string | null>(null);
+  const inputRef              = useRef<HTMLInputElement>(null);
 
   const isValidLength = ci.trim().length >= MIN_CI_LENGTH;
 
@@ -47,7 +47,6 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
         return;
       }
 
-      // Rate limit — leer Retry-After antes de parsear JSON
       if (res.status === 429) {
         const retryAfter = res.headers.get("Retry-After");
         const seconds = retryAfter ? parseInt(retryAfter, 10) : 60;
@@ -61,19 +60,13 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
 
       switch (errorData.error.code) {
         case "NOT_FOUND":
-          setError(
-            "No encontramos su cédula. Verifique el número e intente de nuevo."
-          );
+          setError("No encontramos su cédula. Verifique el número e intente de nuevo.");
           break;
         case "INACTIVE":
-          setError(
-            "Su cuenta está inactiva. Contacte a la administración de TEPUY."
-          );
+          setError("Su cuenta está inactiva. Contacte a la administración de TEPUY.");
           break;
         case "INVALID_CI":
-          setError(
-            "Formato de cédula inválido. Utilice un formato como V12345678."
-          );
+          setError("Formato de cédula inválido. Utilice un formato como V12345678.");
           break;
         default:
           setError("Ocurrió un error inesperado. Intente de nuevo.");
@@ -86,68 +79,72 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
   }, [ci, onResidentFound]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && isValidLength && !isLoading) {
-      handleLookup();
-    }
+    if (e.key === "Enter" && isValidLength && !isLoading) handleLookup();
   };
 
   return (
     <div className="w-full max-w-md mx-auto stagger-children">
-      {/* Hero section */}
-      <div className="text-center space-y-3 mb-8">
-        {/* Decorative icon */}
+
+      {/* Hero */}
+      <div className="text-center space-y-4 mb-8">
+        {/* Icon mark */}
         <div className="flex justify-center">
-          <div className="relative">
-            <div className="h-16 w-16 rounded-2xl flex items-center justify-center shadow-sm animate-float" style={{ background: "linear-gradient(135deg, oklch(0.93 0.04 170), oklch(0.87 0.07 170))" }}>
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-tepuy-600"
-              >
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                <polyline points="10 17 15 12 10 7" />
-                <line x1="15" x2="3" y1="12" y2="12" />
-              </svg>
-            </div>
-            {/* Subtle decorative dots */}
-            <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-tepuy-300/50" />
-            <div className="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-tepuy-200/60" />
+          <div
+            className="h-14 w-14 rounded-2xl flex items-center justify-center"
+            style={{
+              background: "linear-gradient(145deg, oklch(0.56 0.140 170), oklch(0.40 0.105 170))",
+              boxShadow: "0 4px 16px oklch(0.48 0.125 170 / 0.30), 0 1px 3px oklch(0 0 0 / 0.10)",
+            }}
+          >
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
           </div>
         </div>
 
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-tepuy-900">
+        {/* Heading */}
+        <div className="space-y-1.5">
+          <h1 className="text-[22px] font-bold tracking-tight text-tepuy-900">
             Portal de Mantenimiento
           </h1>
-          <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed max-w-[280px] mx-auto">
-            Ingrese su cédula para verificar su identidad como residente de TEPUY.
+          <p className="text-sm text-tepuy-500 leading-relaxed max-w-[260px] mx-auto">
+            Ingrese su cédula para verificar su identidad como usuario de TEPUY.
           </p>
         </div>
       </div>
 
       {/* Lookup card */}
       <div className="glass-card rounded-2xl p-5 space-y-4">
+        {/* Section label */}
+        <p className="text-[10px] font-semibold text-tepuy-400 uppercase tracking-widest">
+          Verificación de identidad
+        </p>
+
         <div className="space-y-1.5">
           <label
             htmlFor="ci-input"
             className="text-sm font-semibold text-tepuy-800 flex items-center gap-1.5"
           >
             <svg
-              width="14"
-              height="14"
+              width="13"
+              height="13"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-tepuy-500"
+              className="text-tepuy-400"
             >
               <rect width="20" height="14" x="2" y="5" rx="2" />
               <line x1="2" x2="22" y1="10" y2="10" />
@@ -163,24 +160,21 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
             autoFocus
             placeholder="Ej: V12345678"
             value={ci}
-            onChange={(e) => {
-              setCi(e.target.value);
-              if (error) setError(null);
-            }}
+            onChange={(e) => { setCi(e.target.value); if (error) setError(null); }}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
-            className="h-12 text-base rounded-xl bg-white/80"
+            className="h-11 text-[15px] rounded-xl bg-white border-tepuy-200 text-tepuy-900 placeholder:text-tepuy-300 focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12"
             aria-describedby={error ? "ci-error" : undefined}
             aria-invalid={!!error}
           />
         </div>
 
-        {/* Error message */}
+        {/* Error */}
         {error && (
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-100 animate-slide-down">
+          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 border border-red-100 animate-slide-down">
             <svg
-              width="16"
-              height="16"
+              width="15"
+              height="15"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -193,65 +187,41 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
               <line x1="12" x2="12" y1="8" y2="12" />
               <line x1="12" x2="12.01" y1="16" y2="16" />
             </svg>
-            <p
-              id="ci-error"
-              role="alert"
-              className="text-sm text-red-700 font-medium leading-snug"
-            >
+            <p id="ci-error" role="alert" className="text-sm text-red-700 font-medium leading-snug">
               {error}
             </p>
           </div>
         )}
 
-        {/* Search button */}
+        {/* CTA */}
         <button
           onClick={handleLookup}
           disabled={!isValidLength || isLoading}
-          className="btn-tepuy w-full h-12 rounded-xl text-base font-semibold text-white flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+          className="btn-tepuy w-full h-11 rounded-xl text-[15px] font-semibold text-white flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <>
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Buscando...
+              Verificando...
             </>
           ) : (
             <>
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
-              Buscar
+              Verificar identidad
             </>
           )}
         </button>
       </div>
 
       {/* Format hint */}
-      <p className="text-xs text-center text-muted-foreground/70 mt-4">
-        Formatos aceptados: V12345678, 12345678, V-12.345.678
+      <p className="text-[11px] text-center text-tepuy-300 mt-4 tracking-wide">
+        Formatos aceptados: V12345678 &middot; 12345678 &middot; V-12.345.678
       </p>
     </div>
   );
