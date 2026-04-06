@@ -42,6 +42,7 @@ describe("POST /api/admin/login", () => {
     });
     insertMock.mockResolvedValue({ error: null });
     process.env.ADMIN_PASSWORD_HASH = VALID_HASH;
+    delete process.env.ADMIN_PASSWORD_HASH_B64;
   });
 
   it("retorna 200 y set-cookie con un hash válido", async () => {
@@ -77,6 +78,27 @@ describe("POST /api/admin/login", () => {
 
   it("retorna 500 cuando falta el env del hash", async () => {
     delete process.env.ADMIN_PASSWORD_HASH;
+
+    const response = await POST(makeRequest(VALID_PASSWORD));
+
+    expect(response.status).toBe(500);
+  });
+
+  it("retorna 200 cuando el hash viene en base64", async () => {
+    delete process.env.ADMIN_PASSWORD_HASH;
+    process.env.ADMIN_PASSWORD_HASH_B64 = Buffer.from(
+      VALID_HASH,
+      "utf8"
+    ).toString("base64");
+
+    const response = await POST(makeRequest(VALID_PASSWORD));
+
+    expect(response.status).toBe(200);
+  });
+
+  it("retorna 500 cuando el hash base64 es inválido", async () => {
+    delete process.env.ADMIN_PASSWORD_HASH;
+    process.env.ADMIN_PASSWORD_HASH_B64 = "@@@";
 
     const response = await POST(makeRequest(VALID_PASSWORD));
 

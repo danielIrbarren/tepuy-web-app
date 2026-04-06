@@ -19,6 +19,7 @@ export type AdminSessionLookupResult =
 type PasswordVerificationResult =
   | {
       ok: true;
+      hashSource: "raw" | "base64";
       normalizedHash: string;
       usedNormalization: boolean;
       hadWrappingQuotes: boolean;
@@ -31,7 +32,8 @@ type PasswordVerificationResult =
     }
   | {
       ok: false;
-      reason: "MISSING_HASH" | "INVALID_PASSWORD";
+      reason: "MISSING_HASH" | "INVALID_HASH_ENCODING" | "INVALID_PASSWORD";
+      hashSource?: "raw" | "base64";
       normalizedHash?: string;
       usedNormalization?: boolean;
       hadWrappingQuotes?: boolean;
@@ -86,21 +88,86 @@ export function normalizeAdminPasswordHash(rawHash: string) {
   return normalized;
 }
 
+function decodeAdminPasswordHashBase64(encodedHash: string) {
+  const trimmed = encodedHash.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const decoded = Buffer.from(trimmed, "base64").toString("utf8");
+
+  if (!decoded) {
+    return null;
+  }
+
+  const canonical = Buffer.from(decoded, "utf8")
+    .toString("base64")
+    .replace(/=+$/g, "");
+  const normalizedInput = trimmed.replace(/\s+/g, "").replace(/=+$/g, "");
+
+  if (canonical !== normalizedInput) {
+    return null;
+  }
+
+  return decoded;
+}
+
+function getConfiguredAdminPasswordHash(
+  rawHash = process.env.ADMIN_PASSWORD_HASH,
+  base64Hash = process.env.ADMIN_PASSWORD_HASH_B64
+) {
+  if (base64Hash) {
+    const decodedHash = decodeAdminPasswordHashBase64(base64Hash);
+
+    if (!decodedHash) {
+      return { status: "invalid-base64" as const };
+    }
+
+    return {
+      status: "ok" as const,
+      hashSource: "base64" as const,
+      rawHash: decodedHash,
+    };
+  }
+
+  if (!rawHash) {
+    return { status: "missing" as const };
+  }
+
+  return {
+    status: "ok" as const,
+    hashSource: "raw" as const,
+    rawHash,
+  };
+}
+
 export async function verifyAdminPassword(
   password: string,
-  rawHash = process.env.ADMIN_PASSWORD_HASH
+  rawHash = process.env.ADMIN_PASSWORD_HASH,
+  base64Hash = process.env.ADMIN_PASSWORD_HASH_B64
 ): Promise<PasswordVerificationResult> {
-  if (!rawHash) {
+  const configuredHash = getConfiguredAdminPasswordHash(rawHash, base64Hash);
+
+  if (configuredHash.status === "missing") {
     return { ok: false, reason: "MISSING_HASH" };
   }
 
-  const normalizedHash = normalizeAdminPasswordHash(rawHash);
-  const usedNormalization = normalizedHash !== rawHash;
-  const hadWrappingQuotes = /^["'].*["']$/.test(rawHash.trim());
-  const hadEscapedDollars = rawHash.includes("\\$");
+  if (configuredHash.status === "invalid-base64") {
+    return {
+      ok: false,
+      reason: "INVALID_HASH_ENCODING",
+      hashSource: "base64",
+    };
+  }
+
+  const normalizedHash = normalizeAdminPasswordHash(configuredHash.rawHash);
+  const usedNormalization = normalizedHash !== configuredHash.rawHash;
+  const hadWrappingQuotes = /^["'].*["']$/.test(configuredHash.rawHash.trim());
+  const hadEscapedDollars = configuredHash.rawHash.includes("\\$");
   const hasEmbeddedQuotes =
     normalizedHash.includes('"') || normalizedHash.includes("'");
-  const backslashCount = (rawHash.match(/\\/g) ?? []).length;
+  const backslashCount = (configuredHash.rawHash.match(/\\/g) ?? []).length;
   const looksLikeBcrypt = /^\$2[abxy]\$\d{2}\$/.test(normalizedHash);
   const isValid = await compare(password, normalizedHash);
 
@@ -108,6 +175,7 @@ export async function verifyAdminPassword(
     return {
       ok: false,
       reason: "INVALID_PASSWORD",
+      hashSource: configuredHash.hashSource,
       normalizedHash,
       usedNormalization,
       hadWrappingQuotes,
@@ -115,13 +183,14 @@ export async function verifyAdminPassword(
       hasEmbeddedQuotes,
       backslashCount,
       looksLikeBcrypt,
-      rawLength: rawHash.length,
+      rawLength: configuredHash.rawHash.length,
       normalizedLength: normalizedHash.length,
     };
   }
 
   return {
     ok: true,
+    hashSource: configuredHash.hashSource,
     normalizedHash,
     usedNormalization,
     hadWrappingQuotes,
@@ -129,7 +198,7 @@ export async function verifyAdminPassword(
     hasEmbeddedQuotes,
     backslashCount,
     looksLikeBcrypt,
-    rawLength: rawHash.length,
+    rawLength: configuredHash.rawHash.length,
     normalizedLength: normalizedHash.length,
   };
 }

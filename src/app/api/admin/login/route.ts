@@ -13,7 +13,7 @@ import { log, getCorrelationId } from "@/lib/logger";
  * Crea una sesión en admin_sessions y setea cookie httpOnly.
  *
  * Body: { password: string }
- * Env:  ADMIN_PASSWORD_HASH (bcrypt hash)
+ * Env:  ADMIN_PASSWORD_HASH / ADMIN_PASSWORD_HASH_B64
  */
 export async function POST(request: NextRequest) {
   try {
@@ -38,9 +38,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!verification.ok && verification.reason === "INVALID_HASH_ENCODING") {
+      log("error", "ADMIN_PASSWORD_HASH_B64 inválido", { correlation_id: cid });
+      return NextResponse.json(
+        { error: { code: "INTERNAL_ERROR", message: "Error de configuración del servidor." } },
+        { status: 500 }
+      );
+    }
+
     if (verification.ok && verification.usedNormalization) {
       log("warn", "ADMIN_PASSWORD_HASH normalizado antes de validar login", {
         correlation_id: cid,
+        hash_source: verification.hashSource,
         had_wrapping_quotes: verification.hadWrappingQuotes,
         had_escaped_dollars: verification.hadEscapedDollars,
         has_embedded_quotes: verification.hasEmbeddedQuotes,
@@ -54,6 +63,7 @@ export async function POST(request: NextRequest) {
     if (!verification.ok) {
       log("warn", "Credenciales admin inválidas", {
         correlation_id: cid,
+        hash_source: verification.hashSource,
         used_normalization: verification.usedNormalization,
         had_wrapping_quotes: verification.hadWrappingQuotes,
         had_escaped_dollars: verification.hadEscapedDollars,

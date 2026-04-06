@@ -53,14 +53,42 @@ describe("adminSession", () => {
       verifyAdminPassword(VALID_PASSWORD, JSON.stringify(VALID_HASH))
     ).resolves.toMatchObject({
       ok: true,
+      hashSource: "raw",
       usedNormalization: true,
       hadWrappingQuotes: true,
       looksLikeBcrypt: true,
     });
   });
 
+  it("valida una contraseña contra un hash en base64", async () => {
+    await expect(
+      verifyAdminPassword(
+        VALID_PASSWORD,
+        undefined,
+        Buffer.from(VALID_HASH, "utf8").toString("base64")
+      )
+    ).resolves.toMatchObject({
+      ok: true,
+      hashSource: "base64",
+      usedNormalization: false,
+      looksLikeBcrypt: true,
+    });
+  });
+
+  it("retorna invalid hash encoding cuando el base64 no es válido", async () => {
+    await expect(
+      verifyAdminPassword(VALID_PASSWORD, undefined, "@@@")
+    ).resolves.toMatchObject({
+      ok: false,
+      reason: "INVALID_HASH_ENCODING",
+      hashSource: "base64",
+    });
+  });
+
   it("retorna missing hash cuando el env no existe", async () => {
-    await expect(verifyAdminPassword(VALID_PASSWORD, undefined)).resolves.toEqual({
+    await expect(
+      verifyAdminPassword(VALID_PASSWORD, undefined, undefined)
+    ).resolves.toEqual({
       ok: false,
       reason: "MISSING_HASH",
     });

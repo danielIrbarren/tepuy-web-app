@@ -34,7 +34,8 @@ npm run dev
 |----------|-----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Si | URL del proyecto Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Si | Clave de servicio para bypass de RLS |
-| `ADMIN_PASSWORD_HASH` | Si | Hash bcrypt de la contraseña del admin, preferiblemente sin comillas ni `\\$` |
+| `ADMIN_PASSWORD_HASH` | Si* | Hash bcrypt de la contraseña del admin, preferiblemente sin comillas ni `\\$` |
+| `ADMIN_PASSWORD_HASH_B64` | Si* | Alternativa recomendada en providers que expanden `$`: hash bcrypt codificado en Base64 |
 | `UPSTASH_REDIS_REST_URL` | Prod | URL de Upstash Redis (fallback en memoria en dev) |
 | `UPSTASH_REDIS_REST_TOKEN` | Prod | Token de Upstash Redis |
 | `MAKE_WEBHOOK_URL` | Prod | URL del webhook de Make.com |
@@ -102,3 +103,5 @@ Residente escanea QR
 
 Acceso en `/admin` protegido por contraseña unica (bcrypt).
 Funcionalidades: buscar, crear, editar, activar/desactivar residentes, generar QR.
+
+\* Configura uno de los dos: `ADMIN_PASSWORD_HASH` o `ADMIN_PASSWORD_HASH_B64`. En Vercel conviene preferir `ADMIN_PASSWORD_HASH_B64` para evitar truncamiento por expansion de variables en valores bcrypt.
