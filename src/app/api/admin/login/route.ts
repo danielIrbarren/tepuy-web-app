@@ -57,18 +57,28 @@ export async function POST(request: NextRequest) {
     }
 
     const storedHash = normalizeBcryptHash(storedHashRaw);
+    const wasNormalized = storedHash !== storedHashRaw;
 
-    if (storedHash !== storedHashRaw) {
-      log("warn", "ADMIN_PASSWORD_HASH normalizado antes de validar login", {
-        correlation_id: cid,
-        had_wrapping_quotes: /^["'].*["']$/.test(storedHashRaw.trim()),
-        had_escaped_dollars: storedHashRaw.includes("\\$"),
-        raw_length: storedHashRaw.length,
-        normalized_length: storedHash.length,
-      });
-    }
+    // DIAGNÓSTICO TEMPORAL — remover después de confirmar el hash en Vercel
+    log("info", "[diag] ADMIN_PASSWORD_HASH en runtime", {
+      correlation_id: cid,
+      raw_length: storedHashRaw.length,
+      normalized_length: storedHash.length,
+      was_normalized: wasNormalized,
+      had_wrapping_quotes: /^["'].*["']$/.test(storedHashRaw.trim()),
+      had_escaped_dollars: storedHashRaw.includes("\\$"),
+      raw_prefix: storedHashRaw.slice(0, 7),        // e.g. "$2b$12$" — seguro, no revela el secreto
+      normalized_prefix: storedHash.slice(0, 7),
+      looks_like_bcrypt: /^\$2[ab]\$\d{2}\$/.test(storedHash),
+    });
 
     const isValid = await compare(password, storedHash);
+
+    log("info", "[diag] resultado de compare()", {
+      correlation_id: cid,
+      is_valid: isValid,
+    });
+
     if (!isValid) {
       return NextResponse.json(
         { error: { code: "INVALID_CREDENTIALS", message: "Contraseña incorrecta." } },
