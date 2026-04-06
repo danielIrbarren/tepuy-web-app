@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { fetchAdminJson } from "@/lib/adminClient";
 import type { ResidentAdmin } from "@/lib/schemas/admin";
 
 interface StatusToggleDialogProps {
@@ -20,24 +21,29 @@ export function StatusToggleDialog({ resident, onClose, onToggled, onError }: St
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`/api/admin/residentes/${resident.id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        onError(data?.error?.message ?? "Error al cambiar estado.");
-        onClose();
-        return;
-      }
+      const data = await fetchAdminJson<{ resident: ResidentAdmin }>(
+        `/api/admin/residentes/${resident.id}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        },
+        {
+          fallbackMessage: "Error al cambiar estado.",
+          onUnauthorized: () => {
+            window.location.href = "/admin/login";
+          },
+        }
+      );
 
       onToggled(data.resident);
       onClose();
-    } catch {
-      onError("Error de conexión.");
+    } catch (error) {
+      onError(
+        error instanceof Error && error.message !== "Failed to fetch"
+          ? error.message
+          : "Error de conexión."
+      );
       onClose();
     } finally {
       setIsSubmitting(false);

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { AdminApiError, fetchAdminJson } from "@/lib/adminClient";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { WORK_AREA_LABELS } from "@/lib/schemas/solicitud";
 
 type RequestStatus = "pendiente" | "en_proceso" | "completado" | "cancelado";
@@ -82,20 +84,27 @@ function QuickStatusMenu({
     if (newStatus === solicitud.request_status) { setIsOpen(false); return; }
     setIsBusy(true);
     try {
-      const res = await fetch(`/api/admin/solicitudes/${solicitud.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ request_status: newStatus }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        onUpdated(data.solicitud);
-      } else {
-        const data = await res.json();
-        onError(data.error?.message ?? "Error al actualizar.");
-      }
-    } catch {
-      onError("Error de conexión.");
+      const data = await fetchAdminJson<{ solicitud: Solicitud }>(
+        `/api/admin/solicitudes/${solicitud.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request_status: newStatus }),
+        },
+        {
+          fallbackMessage: "Error al actualizar.",
+          onUnauthorized: () => {
+            window.location.href = "/admin/login";
+          },
+        }
+      );
+      onUpdated(data.solicitud);
+    } catch (error) {
+      onError(
+        error instanceof Error && error.message !== "Failed to fetch"
+          ? error.message
+          : "Error de conexión."
+      );
     } finally {
       setIsBusy(false);
       setIsOpen(false);
@@ -177,21 +186,28 @@ function SolicitudModal({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/admin/solicitudes/${solicitud.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ request_status: status, admin_notes: notes }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        onUpdated(data.solicitud);
-        onClose();
-        return;
-      }
-      const data = await res.json();
-      onError(data.error?.message ?? "Error al actualizar la solicitud.");
-    } catch {
-      onError("Error de conexión.");
+      const data = await fetchAdminJson<{ solicitud: Solicitud }>(
+        `/api/admin/solicitudes/${solicitud.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request_status: status, admin_notes: notes }),
+        },
+        {
+          fallbackMessage: "Error al actualizar la solicitud.",
+          onUnauthorized: () => {
+            window.location.href = "/admin/login";
+          },
+        }
+      );
+      onUpdated(data.solicitud);
+      onClose();
+    } catch (error) {
+      onError(
+        error instanceof Error && error.message !== "Failed to fetch"
+          ? error.message
+          : "Error de conexión."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -383,15 +399,19 @@ export default function AdminSolicitudesPage() {
       if (workAreaFilter)      params.set("work_area", workAreaFilter);
       if (statusFilter)        params.set("request_status", statusFilter);
 
-      const res = await fetch(`/api/admin/solicitudes?${params.toString()}`);
-      if (res.status === 401) { router.replace("/admin/login"); return; }
-      if (!res.ok) throw new Error("Error fetching");
-
-      const data = await res.json();
+      const data = await fetchAdminJson<{ solicitudes: Solicitud[]; total: number; total_pages: number }>(
+        `/api/admin/solicitudes?${params.toString()}`,
+        undefined,
+        {
+          fallbackMessage: "Error al cargar solicitudes.",
+          onUnauthorized: () => router.replace("/admin/login"),
+        }
+      );
       setSolicitudes(data.solicitudes);
       setTotal(data.total);
       setTotalPages(data.total_pages);
-    } catch {
+    } catch (error) {
+      if (error instanceof AdminApiError && error.status === 401) return;
       showToast("Error al cargar solicitudes.", "error");
     } finally {
       setIsLoading(false);
@@ -414,80 +434,7 @@ export default function AdminSolicitudesPage() {
 
   return (
     <main className="flex-1 flex flex-col min-h-0 bg-tepuy-mesh">
-
-      {/* ─── Top bar ─── */}
-      <div className="border-b border-tepuy-100 bg-white px-4 py-3"
-        style={{ boxShadow: "0 1px 0 oklch(0.92 0.020 170), 0 2px 6px oklch(0 0 0 / 0.03)" }}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
-
-          {/* Left: page title */}
-          <div className="flex items-center gap-2.5">
-            <div
-              className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: "linear-gradient(145deg, oklch(0.56 0.140 170), oklch(0.40 0.105 170))", boxShadow: "0 1px 3px oklch(0.48 0.125 170 / 0.35)" }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" x2="8" y1="13" y2="13" />
-                <line x1="16" x2="8" y1="17" y2="17" />
-              </svg>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-[14px] font-bold text-tepuy-900 tracking-tight">Solicitudes</h1>
-                {!isLoading && (
-                  <span className="text-[11px] font-bold text-tepuy-500 bg-tepuy-50 border border-tepuy-100 px-2 py-0.5 rounded-full tabular-nums">
-                    {total}
-                  </span>
-                )}
-              </div>
-              <p className="text-[10px] text-tepuy-400 font-medium">Panel de administración</p>
-            </div>
-          </div>
-
-          {/* Right: nav buttons */}
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => router.push("/admin")}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-tepuy-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-tepuy-600 transition-colors hover:bg-tepuy-50 hover:border-tepuy-300 cursor-pointer"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-              Usuarios
-            </button>
-            <button
-              onClick={() => router.push("/admin/qr")}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-tepuy-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-tepuy-600 transition-colors hover:bg-tepuy-50 hover:border-tepuy-300 cursor-pointer"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="5" height="5" x="3" y="3" rx="1" /><rect width="5" height="5" x="16" y="3" rx="1" />
-                <rect width="5" height="5" x="3" y="16" rx="1" />
-                <path d="M21 16h-3a2 2 0 0 0-2 2v3" /><path d="M21 21v.01" />
-                <path d="M12 7v3a2 2 0 0 1-2 2H7" /><path d="M3 12h.01" />
-                <path d="M12 3h.01" /><path d="M7 21v.01" /><path d="M12 18v.01" />
-                <path d="M17 12h.01" /><path d="M12 12v.01" />
-              </svg>
-              QR
-            </button>
-            <button
-              onClick={async () => { await fetch("/api/admin/logout", { method: "DELETE" }); router.push("/admin/login"); }}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold text-tepuy-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 border border-transparent transition-colors cursor-pointer"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" x2="9" y1="12" y2="12" />
-              </svg>
-              Salir
-            </button>
-          </div>
-        </div>
-      </div>
+      <AdminPageHeader title="Solicitudes" count={isLoading ? undefined : total} section="solicitudes" />
 
       {/* ─── Filters ─── */}
       <div className="px-4 py-3">

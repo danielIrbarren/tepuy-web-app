@@ -16,12 +16,13 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
 import type { AdminErrorResponse } from "@/lib/schemas/admin";
-import { log } from "@/lib/logger";
-
-export const ADMIN_SESSION_COOKIE = "tepuy_admin_session";
-export const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 horas
+import { log, getCorrelationId } from "@/lib/logger";
+import {
+  ADMIN_SESSION_COOKIE,
+  clearAdminSessionCookie,
+  getAdminSession,
+} from "@/lib/adminSession";
 
 function unauthorizedResponse(message: string) {
   const response = NextResponse.json<AdminErrorResponse>(
@@ -29,14 +30,7 @@ function unauthorizedResponse(message: string) {
     { status: 401 }
   );
 
-  response.cookies.set(ADMIN_SESSION_COOKIE, "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 0,
-  });
-
+  clearAdminSessionCookie(response);
   return response;
 }
 
@@ -50,37 +44,36 @@ export async function requireAdmin(
   request: NextRequest
 ): Promise<NextResponse | null> {
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+  const correlationId = getCorrelationId(request);
 
   if (!token) {
+    log("warn", "Acceso admin sin cookie de sesión", { correlation_id: correlationId });
     return unauthorizedResponse("Sesión no encontrada. Inicia sesión.");
   }
 
-  // Buscar la sesión en DB
-  const { data: session, error } = await supabaseAdmin
-    .from("admin_sessions")
-    .select("id, expires_at")
-    .eq("session_token", token)
-    .maybeSingle();
-
-  if (error) {
-    log("error", "Error verificando sesión admin", { error: error.message });
+  let session;
+  try {
+    session = await getAdminSession(token);
+  } catch (error) {
+    log("error", "Error verificando sesión admin", {
+      error: error instanceof Error ? error.message : String(error),
+      correlation_id: correlationId,
+    });
     return unauthorizedResponse("Error verificando la sesión.");
   }
 
-  if (!session) {
+  if (session.status === "invalid") {
+    log("warn", "Sesión admin inválida", { correlation_id: correlationId });
     return unauthorizedResponse("Sesión inválida. Inicia sesión.");
   }
 
-  // Verificar expiración
-  if (new Date(session.expires_at) < new Date()) {
-    // Limpiar sesión expirada en background
-    void supabaseAdmin
-      .from("admin_sessions")
-      .delete()
-      .eq("id", session.id);
-
+  if (session.status === "expired") {
+    log("warn", "Sesión admin expirada", {
+      correlation_id: correlationId,
+      expires_at: session.session.expires_at,
+    });
     return unauthorizedResponse("Sesión expirada. Inicia sesión nuevamente.");
   }
 
-  return null; // ✅ Sesión válida
+  return null;
 }

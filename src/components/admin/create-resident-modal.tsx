@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AdminApiError, fetchAdminJson } from "@/lib/adminClient";
 import type { ResidentAdmin } from "@/lib/schemas/admin";
 
 interface CreateResidentModalProps {
@@ -42,29 +43,30 @@ export function CreateResidentModal({ onClose, onCreated, onError }: CreateResid
     setFieldError(null);
 
     try {
-      const res = await fetch("/api/admin/residentes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        const msg = data?.error?.message ?? "Error al crear residente.";
-        if (res.status === 400 || res.status === 409) {
-          setFieldError(msg);
-        } else {
-          onError(msg);
-          onClose();
+      const data = await fetchAdminJson<{ resident: ResidentAdmin }>(
+        "/api/admin/residentes",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        },
+        {
+          fallbackMessage: "Error al crear residente.",
+          onUnauthorized: () => {
+            window.location.href = "/admin/login";
+          },
         }
-        return;
-      }
+      );
 
       onCreated(data.resident);
       onClose();
-    } catch {
-      onError("Error de conexión.");
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Error al crear residente.";
+      if (error instanceof AdminApiError && (error.status === 400 || error.status === 409)) {
+        setFieldError(msg);
+        return;
+      }
+      onError(msg === "Failed to fetch" ? "Error de conexión." : msg);
       onClose();
     } finally {
       setIsSubmitting(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { fetchAdmin } from "@/lib/adminClient";
 import type { ResidentAdmin } from "@/lib/schemas/admin";
 
 interface DeleteResidentDialogProps {
@@ -21,21 +22,24 @@ export function DeleteResidentDialog({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/admin/residentes/${resident.id}`, {
-        method: "DELETE",
-      });
-
-      if (res.status === 204) {
-        onDeleted(resident.id);
-        onClose();
-        return;
-      }
-
-      const data = await res.json();
-      onError(data.error?.message ?? "Error al eliminar el residente.");
+      await fetchAdmin(
+        `/api/admin/residentes/${resident.id}`,
+        { method: "DELETE" },
+        {
+          fallbackMessage: "Error al eliminar el residente.",
+          onUnauthorized: () => {
+            window.location.href = "/admin/login";
+          },
+        }
+      );
+      onDeleted(resident.id);
       onClose();
-    } catch {
-      onError("Error de conexión al eliminar el residente.");
+    } catch (error) {
+      onError(
+        error instanceof Error && error.message !== "Failed to fetch"
+          ? error.message
+          : "Error de conexión al eliminar el residente."
+      );
       onClose();
     } finally {
       setIsDeleting(false);

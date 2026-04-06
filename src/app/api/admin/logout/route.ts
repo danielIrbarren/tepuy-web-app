@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
-
-const ADMIN_SESSION_COOKIE = "tepuy_admin_session";
+import {
+  ADMIN_SESSION_COOKIE,
+  clearAdminSession,
+  clearAdminSessionCookie,
+} from "@/lib/adminSession";
+import { getCorrelationId, log } from "@/lib/logger";
 
 /**
  * DELETE /api/admin/logout
@@ -10,23 +13,21 @@ const ADMIN_SESSION_COOKIE = "tepuy_admin_session";
  */
 export async function DELETE(request: NextRequest) {
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+  const correlationId = getCorrelationId(request);
 
   if (token) {
-    // Eliminar sesión de la DB (fire-and-forget, no bloquea el logout)
-    void supabaseAdmin
-      .from("admin_sessions")
-      .delete()
-      .eq("session_token", token);
+    try {
+      await clearAdminSession(token);
+      log("info", "Sesión admin eliminada", { correlation_id: correlationId });
+    } catch (error) {
+      log("warn", "No se pudo eliminar la sesión admin durante logout", {
+        correlation_id: correlationId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(ADMIN_SESSION_COOKIE, "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 0, // Eliminar cookie inmediatamente
-  });
-
+  clearAdminSessionCookie(response);
   return response;
 }

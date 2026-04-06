@@ -1,13 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { getPublicAppUrl } from "@/lib/publicAppUrl";
 
-const PRODUCTION_URL = "https://tepuy-web-app.vercel.app";
+const PRODUCTION_URL = getPublicAppUrl();
 
 export default function AdminQRPage() {
-  const router = useRouter();
-
   const handlePrint = () => {
     window.print();
   };
@@ -35,14 +34,10 @@ export default function AdminQRPage() {
         }
       `}</style>
 
+      <AdminPageHeader title="QR" section="qr" />
+
       <main className="flex-1 w-full max-w-lg mx-auto px-4 py-6">
         <div className="space-y-5 animate-slide-up">
-          <button
-            onClick={() => router.push("/admin")}
-            className="no-print flex items-center gap-1 text-sm font-medium text-tepuy-500 transition-colors hover:text-tepuy-700 cursor-pointer"
-          >
-            ← Volver al panel
-          </button>
 
           <div className="print-area glass-card rounded-2xl p-8 text-center space-y-6">
             <div className="space-y-2">

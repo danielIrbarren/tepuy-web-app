@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AdminApiError, fetchAdminJson } from "@/lib/adminClient";
 import type { ResidentAdmin } from "@/lib/schemas/admin";
 
 interface EditResidentModalProps {
@@ -40,29 +41,30 @@ export function EditResidentModal({ resident, onClose, onUpdated, onError }: Edi
     setFieldError(null);
 
     try {
-      const res = await fetch(`/api/admin/residentes/${resident.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        const msg = data?.error?.message ?? "Error al actualizar residente.";
-        if (res.status === 400) {
-          setFieldError(msg);
-        } else {
-          onError(msg);
-          onClose();
+      const data = await fetchAdminJson<{ resident: ResidentAdmin }>(
+        `/api/admin/residentes/${resident.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        },
+        {
+          fallbackMessage: "Error al actualizar residente.",
+          onUnauthorized: () => {
+            window.location.href = "/admin/login";
+          },
         }
-        return;
-      }
+      );
 
       onUpdated(data.resident);
       onClose();
-    } catch {
-      onError("Error de conexión.");
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Error al actualizar residente.";
+      if (error instanceof AdminApiError && error.status === 400) {
+        setFieldError(msg);
+        return;
+      }
+      onError(msg === "Failed to fetch" ? "Error de conexión." : msg);
       onClose();
     } finally {
       setIsSubmitting(false);

@@ -34,12 +34,12 @@ npm run dev
 |----------|-----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Si | URL del proyecto Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Si | Clave de servicio para bypass de RLS |
-| `ADMIN_PASSWORD_HASH` | Si | Hash bcrypt de la contraseña del admin |
+| `ADMIN_PASSWORD_HASH` | Si | Hash bcrypt de la contraseña del admin, preferiblemente sin comillas ni `\\$` |
 | `UPSTASH_REDIS_REST_URL` | Prod | URL de Upstash Redis (fallback en memoria en dev) |
 | `UPSTASH_REDIS_REST_TOKEN` | Prod | Token de Upstash Redis |
 | `MAKE_WEBHOOK_URL` | Prod | URL del webhook de Make.com |
 | `CRON_SECRET` | Prod | Secret para autenticar el cron de Vercel |
-| `NEXT_PUBLIC_SITE_URL` | No | URL de produccion para el QR (default: `https://tepuy.anvroc.com`) |
+| `NEXT_PUBLIC_APP_URL` | No | URL pública del portal para el QR (default: `https://tepuy-web-app.vercel.app`) |
 
 ## Estructura del proyecto
 

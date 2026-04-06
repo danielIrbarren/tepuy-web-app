@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { ResidentAdmin, ListResidentsResponse } from "@/lib/schemas/admin";
+import { AdminApiError, fetchAdminJson } from "@/lib/adminClient";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { CreateResidentModal } from "@/components/admin/create-resident-modal";
 import { EditResidentModal } from "@/components/admin/edit-resident-modal";
 import { StatusToggleDialog } from "@/components/admin/status-toggle-dialog";
@@ -64,20 +66,19 @@ export default function AdminPage() {
       if (debouncedResidencia) params.set("residencia", debouncedResidencia);
       if (statusFilter) params.set("status", statusFilter);
 
-      const res = await fetch(`/api/admin/residentes?${params.toString()}`);
-
-      if (res.status === 401) {
-        router.replace("/admin/login");
-        return;
-      }
-
-      if (!res.ok) throw new Error("Error fetching residents");
-
-      const data: ListResidentsResponse = await res.json();
+      const data = await fetchAdminJson<ListResidentsResponse>(
+        `/api/admin/residentes?${params.toString()}`,
+        undefined,
+        {
+          fallbackMessage: "Error al cargar residentes.",
+          onUnauthorized: () => router.replace("/admin/login"),
+        }
+      );
       setResidents(data.residents);
       setTotal(data.total);
       setTotalPages(data.total_pages);
-    } catch {
+    } catch (error) {
+      if (error instanceof AdminApiError && error.status === 401) return;
       showToast("Error al cargar residentes.", "error");
     } finally {
       setIsLoading(false);
@@ -92,12 +93,6 @@ export default function AdminPage() {
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
-  };
-
-  // Logout
-  const handleLogout = async () => {
-    await fetch("/api/admin/logout", { method: "DELETE" });
-    router.push("/admin/login");
   };
 
   // Callbacks for modals
@@ -129,74 +124,7 @@ export default function AdminPage() {
 
   return (
     <main className="flex-1 flex flex-col min-h-0">
-      {/* Admin header bar */}
-      <div className="border-b border-tepuy-200/60 bg-white/80 backdrop-blur-md px-4 py-3">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div
-              className="h-7 w-7 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, oklch(0.50 0.13 170), oklch(0.43 0.11 170))" }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-            </div>
-            <h1 className="text-base font-bold text-tepuy-900">Residentes</h1>
-            <span className="text-xs font-medium text-tepuy-400 bg-tepuy-50 px-2 py-0.5 rounded-full">
-              {total}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.push("/admin/solicitudes")}
-              className="inline-flex items-center gap-1 rounded-lg border border-tepuy-200 px-2.5 py-1.5 text-xs font-medium text-tepuy-600 transition-colors duration-200 hover:bg-tepuy-50 cursor-pointer"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" x2="8" y1="13" y2="13" />
-                <line x1="16" x2="8" y1="17" y2="17" />
-              </svg>
-              Solicitudes
-            </button>
-            <button
-              onClick={() => router.push("/admin/qr")}
-              className="inline-flex items-center gap-1 rounded-lg border border-tepuy-200 px-2.5 py-1.5 text-xs font-medium text-tepuy-600 transition-colors duration-200 hover:bg-tepuy-50 cursor-pointer"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="5" height="5" x="3" y="3" rx="1" />
-                <rect width="5" height="5" x="16" y="3" rx="1" />
-                <rect width="5" height="5" x="3" y="16" rx="1" />
-                <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
-                <path d="M21 21v.01" />
-                <path d="M12 7v3a2 2 0 0 1-2 2H7" />
-                <path d="M3 12h.01" />
-                <path d="M12 3h.01" />
-                <path d="M12 16v.01" />
-                <path d="M16 12h1" />
-                <path d="M21 12v.01" />
-                <path d="M12 21v-1" />
-              </svg>
-              QR
-            </button>
-            <button
-              onClick={handleLogout}
-              className="text-xs font-medium text-tepuy-500 hover:text-red-500 transition-colors duration-200 flex items-center gap-1 cursor-pointer"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" x2="9" y1="12" y2="12" />
-              </svg>
-              Salir
-            </button>
-          </div>
-        </div>
-      </div>
+      <AdminPageHeader title="Residentes" count={isLoading ? undefined : total} section="residents" />
 
       {/* Controls */}
       <div className="px-4 py-4">

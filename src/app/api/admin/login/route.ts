@@ -1,28 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { compare } from "bcryptjs";
-import { randomUUID } from "crypto";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import {
+  createAdminSession,
+  setAdminSessionCookie,
+  verifyAdminPassword,
+} from "@/lib/adminSession";
 import { log, getCorrelationId } from "@/lib/logger";
-
-const ADMIN_SESSION_COOKIE = "tepuy_admin_session";
-const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 horas
-
-function normalizeBcryptHash(rawHash: string) {
-  let normalized = rawHash.trim();
-
-  // Some env providers persist pasted secrets with wrapping quotes.
-  if (
-    (normalized.startsWith('"') && normalized.endsWith('"')) ||
-    (normalized.startsWith("'") && normalized.endsWith("'"))
-  ) {
-    normalized = normalized.slice(1, -1);
-  }
-
-  // dotenv requires escaping `$`, but the runtime value must be plain bcrypt.
-  normalized = normalized.replace(/\\\$/g, "$");
-
-  return normalized;
-}
 
 /**
  * POST /api/admin/login
@@ -46,9 +28,9 @@ export async function POST(request: NextRequest) {
     }
 
     const cid = getCorrelationId(request);
+    const verification = await verifyAdminPassword(password);
 
-    const storedHashRaw = process.env.ADMIN_PASSWORD_HASH;
-    if (!storedHashRaw) {
+    if (!verification.ok && verification.reason === "MISSING_HASH") {
       log("error", "ADMIN_PASSWORD_HASH no configurado", { correlation_id: cid });
       return NextResponse.json(
         { error: { code: "INTERNAL_ERROR", message: "Error de configuración del servidor." } },
@@ -56,66 +38,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const storedHash = normalizeBcryptHash(storedHashRaw);
-    const wasNormalized = storedHash !== storedHashRaw;
+    if (verification.ok && verification.usedNormalization) {
+      log("warn", "ADMIN_PASSWORD_HASH normalizado antes de validar login", {
+        correlation_id: cid,
+        had_wrapping_quotes: verification.hadWrappingQuotes,
+        had_escaped_dollars: verification.hadEscapedDollars,
+        raw_length: verification.rawLength,
+        normalized_length: verification.normalizedLength,
+      });
+    }
 
-    // DIAGNÓSTICO TEMPORAL — remover después de confirmar el hash en Vercel
-    log("info", "[diag] ADMIN_PASSWORD_HASH en runtime", {
-      correlation_id: cid,
-      raw_length: storedHashRaw.length,
-      normalized_length: storedHash.length,
-      was_normalized: wasNormalized,
-      had_wrapping_quotes: /^["'].*["']$/.test(storedHashRaw.trim()),
-      had_escaped_dollars: storedHashRaw.includes("\\$"),
-      raw_prefix: storedHashRaw.slice(0, 7),        // e.g. "$2b$12$" — seguro, no revela el secreto
-      normalized_prefix: storedHash.slice(0, 7),
-      looks_like_bcrypt: /^\$2[ab]\$\d{2}\$/.test(storedHash),
-    });
-
-    const isValid = await compare(password, storedHash);
-
-    log("info", "[diag] resultado de compare()", {
-      correlation_id: cid,
-      is_valid: isValid,
-    });
-
-    if (!isValid) {
+    if (!verification.ok) {
+      log("warn", "Credenciales admin inválidas", { correlation_id: cid });
       return NextResponse.json(
         { error: { code: "INVALID_CREDENTIALS", message: "Contraseña incorrecta." } },
         { status: 401 }
       );
     }
 
-    // Crear sesión en DB
-    const sessionToken = randomUUID();
-    const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
+    try {
+      const session = await createAdminSession();
+      const response = NextResponse.json({ ok: true });
 
-    const { error: insertError } = await supabaseAdmin
-      .from("admin_sessions")
-      .insert({
-        session_token: sessionToken,
-        expires_at: expiresAt.toISOString(),
+      setAdminSessionCookie(response, session.token);
+
+      log("info", "Sesión admin creada", {
+        correlation_id: cid,
+        expires_at: session.expiresAt.toISOString(),
       });
 
-    if (insertError) {
-      log("error", "Error creando sesión admin", { error: insertError.message, correlation_id: cid });
+      return response;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      log("error", "Error creando sesión admin", {
+        error: message,
+        correlation_id: cid,
+      });
       return NextResponse.json(
         { error: { code: "INTERNAL_ERROR", message: "Error al crear la sesión." } },
         { status: 500 }
       );
     }
-
-    // Setear cookie httpOnly
-    const response = NextResponse.json({ ok: true });
-    response.cookies.set(ADMIN_SESSION_COOKIE, sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: SESSION_DURATION_MS / 1000, // en segundos
-    });
-
-    return response;
   } catch {
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: "Error interno del servidor." } },
