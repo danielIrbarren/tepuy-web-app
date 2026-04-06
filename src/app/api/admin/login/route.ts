@@ -43,13 +43,26 @@ export async function POST(request: NextRequest) {
         correlation_id: cid,
         had_wrapping_quotes: verification.hadWrappingQuotes,
         had_escaped_dollars: verification.hadEscapedDollars,
+        has_embedded_quotes: verification.hasEmbeddedQuotes,
+        backslash_count: verification.backslashCount,
+        looks_like_bcrypt: verification.looksLikeBcrypt,
         raw_length: verification.rawLength,
         normalized_length: verification.normalizedLength,
       });
     }
 
     if (!verification.ok) {
-      log("warn", "Credenciales admin inválidas", { correlation_id: cid });
+      log("warn", "Credenciales admin inválidas", {
+        correlation_id: cid,
+        used_normalization: verification.usedNormalization,
+        had_wrapping_quotes: verification.hadWrappingQuotes,
+        had_escaped_dollars: verification.hadEscapedDollars,
+        has_embedded_quotes: verification.hasEmbeddedQuotes,
+        backslash_count: verification.backslashCount,
+        looks_like_bcrypt: verification.looksLikeBcrypt,
+        raw_length: verification.rawLength,
+        normalized_length: verification.normalizedLength,
+      });
       return NextResponse.json(
         { error: { code: "INVALID_CREDENTIALS", message: "Contraseña incorrecta." } },
         { status: 401 }

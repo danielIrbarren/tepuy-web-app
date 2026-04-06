@@ -16,6 +16,10 @@ describe("adminSession", () => {
     expect(normalizeAdminPasswordHash("\\$2b\\$12\\$UN9pNADhEa9vbAyUe/5ic.6FqGQc9FRUInwrGgxV0ZICRpSnJazma")).toBe(VALID_HASH);
   });
 
+  it("normaliza un hash serializado como JSON string", () => {
+    expect(normalizeAdminPasswordHash(JSON.stringify(VALID_HASH))).toBe(VALID_HASH);
+  });
+
   it("valida una contraseña contra un hash bcrypt limpio", async () => {
     await expect(verifyAdminPassword(VALID_PASSWORD, VALID_HASH)).resolves.toMatchObject({
       ok: true,
@@ -41,6 +45,17 @@ describe("adminSession", () => {
       ok: true,
       usedNormalization: true,
       hadEscapedDollars: true,
+    });
+  });
+
+  it("valida una contraseña contra un hash serializado como JSON string", async () => {
+    await expect(
+      verifyAdminPassword(VALID_PASSWORD, JSON.stringify(VALID_HASH))
+    ).resolves.toMatchObject({
+      ok: true,
+      usedNormalization: true,
+      hadWrappingQuotes: true,
+      looksLikeBcrypt: true,
     });
   });
 

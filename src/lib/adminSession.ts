@@ -23,6 +23,9 @@ type PasswordVerificationResult =
       usedNormalization: boolean;
       hadWrappingQuotes: boolean;
       hadEscapedDollars: boolean;
+      hasEmbeddedQuotes: boolean;
+      backslashCount: number;
+      looksLikeBcrypt: boolean;
       rawLength: number;
       normalizedLength: number;
     }
@@ -33,6 +36,9 @@ type PasswordVerificationResult =
       usedNormalization?: boolean;
       hadWrappingQuotes?: boolean;
       hadEscapedDollars?: boolean;
+      hasEmbeddedQuotes?: boolean;
+      backslashCount?: number;
+      looksLikeBcrypt?: boolean;
       rawLength?: number;
       normalizedLength?: number;
     };
@@ -49,6 +55,18 @@ function getSessionCookieBaseOptions() {
 export function normalizeAdminPasswordHash(rawHash: string) {
   let normalized = rawHash.trim();
 
+  // Handle env providers that serialize secrets as JSON strings.
+  if (normalized.startsWith('"') && normalized.endsWith('"')) {
+    try {
+      const parsed = JSON.parse(normalized);
+      if (typeof parsed === "string") {
+        normalized = parsed.trim();
+      }
+    } catch {
+      // Fall through to quote stripping below.
+    }
+  }
+
   if (
     (normalized.startsWith('"') && normalized.endsWith('"')) ||
     (normalized.startsWith("'") && normalized.endsWith("'"))
@@ -56,7 +74,14 @@ export function normalizeAdminPasswordHash(rawHash: string) {
     normalized = normalized.slice(1, -1);
   }
 
-  normalized = normalized.replace(/\\\$/g, "$");
+  normalized = normalized.replace(/\\+\$/g, "$");
+
+  if (
+    (normalized.startsWith('"') && normalized.endsWith('"')) ||
+    (normalized.startsWith("'") && normalized.endsWith("'"))
+  ) {
+    normalized = normalized.slice(1, -1).trim();
+  }
 
   return normalized;
 }
@@ -73,6 +98,10 @@ export async function verifyAdminPassword(
   const usedNormalization = normalizedHash !== rawHash;
   const hadWrappingQuotes = /^["'].*["']$/.test(rawHash.trim());
   const hadEscapedDollars = rawHash.includes("\\$");
+  const hasEmbeddedQuotes =
+    normalizedHash.includes('"') || normalizedHash.includes("'");
+  const backslashCount = (rawHash.match(/\\/g) ?? []).length;
+  const looksLikeBcrypt = /^\$2[abxy]\$\d{2}\$/.test(normalizedHash);
   const isValid = await compare(password, normalizedHash);
 
   if (!isValid) {
@@ -83,6 +112,9 @@ export async function verifyAdminPassword(
       usedNormalization,
       hadWrappingQuotes,
       hadEscapedDollars,
+      hasEmbeddedQuotes,
+      backslashCount,
+      looksLikeBcrypt,
       rawLength: rawHash.length,
       normalizedLength: normalizedHash.length,
     };
@@ -94,6 +126,9 @@ export async function verifyAdminPassword(
     usedNormalization,
     hadWrappingQuotes,
     hadEscapedDollars,
+    hasEmbeddedQuotes,
+    backslashCount,
+    looksLikeBcrypt,
     rawLength: rawHash.length,
     normalizedLength: normalizedHash.length,
   };
