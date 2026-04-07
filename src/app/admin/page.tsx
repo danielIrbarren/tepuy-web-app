@@ -187,7 +187,7 @@ export default function AdminPage() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="h-10 px-3 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-700 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15 cursor-pointer"
+              className="w-full sm:w-auto h-10 px-3 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-700 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15 cursor-pointer"
             >
               <option value="">Todos los estados</option>
               <option value="active">Activos</option>
@@ -197,7 +197,7 @@ export default function AdminPage() {
             {/* Create button */}
             <button
               onClick={() => setShowCreateModal(true)}
-              className="btn-tepuy h-10 px-4 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+              className="btn-tepuy h-10 px-4 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap w-full sm:w-auto"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14" />
@@ -217,12 +217,12 @@ export default function AdminPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-tepuy-100">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">CI</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Nombre</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden sm:table-cell">Inmueble</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden md:table-cell">Apto</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Estado</th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Acciones</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">CI</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Nombre</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden sm:table-cell">Inmueble</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden md:table-cell">Apto</th>
+                    <th className="text-center px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Estado</th>
+                    <th className="text-right px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -249,11 +249,11 @@ export default function AdminPage() {
                   ) : (
                     residents.map((r) => (
                       <tr key={r.id} className="border-b border-tepuy-50 hover:bg-tepuy-50/50 transition-colors">
-                        <td className="px-4 py-3 font-mono font-semibold text-tepuy-800">{r.ci_usuario}</td>
-                        <td className="px-4 py-3 text-tepuy-700">{r.nombre_usuario || "—"}</td>
-                        <td className="px-4 py-3 text-tepuy-600 hidden sm:table-cell">{r.descripcion_inmueble || "—"}</td>
-                        <td className="px-4 py-3 text-tepuy-600 hidden md:table-cell">{r.nro_apto || "—"}</td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-2 sm:px-4 py-3 font-mono font-semibold text-tepuy-800 text-xs sm:text-sm">{r.ci_usuario}</td>
+                        <td className="px-2 sm:px-4 py-3 text-tepuy-700 text-xs sm:text-sm">{r.nombre_usuario || "—"}</td>
+                        <td className="px-2 sm:px-4 py-3 text-tepuy-600 hidden sm:table-cell">{r.descripcion_inmueble || "—"}</td>
+                        <td className="px-2 sm:px-4 py-3 text-tepuy-600 hidden md:table-cell">{r.nro_apto || "—"}</td>
+                        <td className="px-2 sm:px-4 py-3 text-center">
                           <button
                             onClick={() => setTogglingResident(r)}
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
@@ -268,20 +268,22 @@ export default function AdminPage() {
                             {r.status === "active" ? "Activo" : "Inactivo"}
                           </button>
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-2 sm:px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => setEditingResident(r)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-tepuy-600 hover:text-tepuy-800 hover:bg-tepuy-100 transition-colors cursor-pointer"
+                              title="Editar"
+                              className="inline-flex items-center gap-1 px-2 py-1.5 sm:px-2.5 rounded-lg text-xs font-medium text-tepuy-600 hover:text-tepuy-800 hover:bg-tepuy-100 transition-colors cursor-pointer"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                               </svg>
-                              Editar
+                              <span className="hidden sm:inline">Editar</span>
                             </button>
                             <button
                               onClick={() => setDeletingResident(r)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+                              title="Eliminar"
+                              className="inline-flex items-center gap-1 px-2 py-1.5 sm:px-2.5 rounded-lg text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="3 6 5 6 21 6" />
@@ -289,7 +291,7 @@ export default function AdminPage() {
                                 <path d="M10 11v6" /><path d="M14 11v6" />
                                 <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                               </svg>
-                              Eliminar
+                              <span className="hidden sm:inline">Eliminar</span>
                             </button>
                           </div>
                         </td>

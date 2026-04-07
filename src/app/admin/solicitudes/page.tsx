@@ -439,70 +439,76 @@ export default function AdminSolicitudesPage() {
       {/* ─── Filters ─── */}
       <div className="px-4 py-3">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row gap-2 flex-wrap items-center">
+          <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
 
-            {/* Search CI */}
-            <div className="relative flex-1 min-w-[180px]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-tepuy-400">
-                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Buscar por CI..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-9 pl-9 pr-3.5 rounded-lg border border-tepuy-200 bg-white text-[13px] text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12"
-              />
+            {/* Row 1 on mobile: search + residencia */}
+            <div className="flex gap-2 flex-1">
+              {/* Search CI */}
+              <div className="relative flex-1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-tepuy-400">
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Buscar por CI..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full h-10 pl-9 pr-3.5 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+
+              {/* Residencia */}
+              <div className="relative flex-1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-tepuy-400">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Residencia..."
+                  value={residenciaFilter}
+                  onChange={(e) => setResidenciaFilter(e.target.value)}
+                  className="w-full sm:w-40 h-10 pl-9 pr-3.5 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
             </div>
 
-            {/* Residencia */}
-            <div className="relative">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-tepuy-400">
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Residencia..."
-                value={residenciaFilter}
-                onChange={(e) => setResidenciaFilter(e.target.value)}
-                className="w-full sm:w-40 h-9 pl-9 pr-3.5 rounded-lg border border-tepuy-200 bg-white text-[13px] text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12"
-              />
-            </div>
-
-            {/* Work area */}
-            <select
-              value={workAreaFilter}
-              onChange={(e) => { setWorkAreaFilter(e.target.value); setPage(1); }}
-              className="h-9 px-3 rounded-lg border border-tepuy-200 bg-white text-[13px] text-tepuy-700 outline-none transition-all focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 cursor-pointer"
-            >
-              <option value="">Todas las áreas</option>
-              {Object.entries(WORK_AREA_LABELS).map(([val, label]) => (
-                <option key={val} value={val}>{label}</option>
-              ))}
-            </select>
-
-            {/* Status */}
-            <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="h-9 px-3 rounded-lg border border-tepuy-200 bg-white text-[13px] text-tepuy-700 outline-none transition-all focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 cursor-pointer"
-            >
-              <option value="">Todos los estados</option>
-              {(Object.keys(REQUEST_STATUS_LABELS) as RequestStatus[]).map((s) => (
-                <option key={s} value={s}>{REQUEST_STATUS_LABELS[s]}</option>
-              ))}
-            </select>
-
-            {/* Clear filters */}
-            {hasFilters && (
-              <button
-                onClick={() => { setSearch(""); setResidenciaFilter(""); setWorkAreaFilter(""); setStatusFilter(""); setPage(1); }}
-                className="h-9 px-3 rounded-lg text-[12px] font-semibold text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+            {/* Row 2 on mobile: selects */}
+            <div className="flex gap-2">
+              {/* Work area */}
+              <select
+                value={workAreaFilter}
+                onChange={(e) => { setWorkAreaFilter(e.target.value); setPage(1); }}
+                className="flex-1 sm:flex-none h-10 px-3 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-700 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15 cursor-pointer"
               >
-                Limpiar filtros
-              </button>
-            )}
+                <option value="">Todas las áreas</option>
+                {Object.entries(WORK_AREA_LABELS).map(([val, label]) => (
+                  <option key={val} value={val}>{label}</option>
+                ))}
+              </select>
+
+              {/* Status */}
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                className="flex-1 sm:flex-none h-10 px-3 rounded-xl border border-tepuy-200 bg-white/90 text-sm text-tepuy-700 outline-none transition-all focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15 cursor-pointer"
+              >
+                <option value="">Todos los estados</option>
+                {(Object.keys(REQUEST_STATUS_LABELS) as RequestStatus[]).map((s) => (
+                  <option key={s} value={s}>{REQUEST_STATUS_LABELS[s]}</option>
+                ))}
+              </select>
+
+              {/* Clear filters */}
+              {hasFilters && (
+                <button
+                  onClick={() => { setSearch(""); setResidenciaFilter(""); setWorkAreaFilter(""); setStatusFilter(""); setPage(1); }}
+                  className="h-10 px-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -518,13 +524,13 @@ export default function AdminSolicitudesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "oklch(0.978 0.004 200)", borderBottom: "1px solid oklch(0.92 0.020 265)" }}>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Fecha</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">CI</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden sm:table-cell">Nombre</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden md:table-cell">Inmueble</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden lg:table-cell">Área</th>
-                    <th className="text-center px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Estado</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Acciones</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Fecha</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">CI</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden sm:table-cell">Nombre</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden md:table-cell">Inmueble</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden lg:table-cell">Área</th>
+                    <th className="text-center px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Estado</th>
+                    <th className="text-right px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Ver</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -554,26 +560,26 @@ export default function AdminSolicitudesPage() {
                         key={s.id}
                         className="border-b border-tepuy-50 hover:bg-tepuy-50/40 transition-colors"
                       >
-                        <td className="px-4 py-3 text-tepuy-400 text-[12px] whitespace-nowrap font-medium">
+                        <td className="px-2 sm:px-4 py-2.5 text-tepuy-400 text-[11px] sm:text-[12px] whitespace-nowrap font-medium">
                           {formatDate(s.created_at)}
                         </td>
-                        <td className="px-4 py-3 font-mono font-bold text-tepuy-800 text-[13px]">
+                        <td className="px-2 sm:px-4 py-2.5 font-mono font-bold text-tepuy-800 text-xs sm:text-[13px]">
                           {s.ci_usuario}
                         </td>
-                        <td className="px-4 py-3 text-tepuy-700 text-[13px] hidden sm:table-cell">
+                        <td className="px-2 sm:px-4 py-2.5 text-tepuy-700 text-[13px] hidden sm:table-cell">
                           {s.nombre_usuario || "—"}
                         </td>
-                        <td className="px-4 py-3 text-tepuy-600 text-[13px] hidden md:table-cell">
+                        <td className="px-2 sm:px-4 py-2.5 text-tepuy-600 text-[13px] hidden md:table-cell">
                           {s.descripcion_inmueble || "—"}
                           {s.nro_apto && (
                             <span className="text-tepuy-400 ml-1 font-medium">· {s.nro_apto}</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-tepuy-600 text-[13px] hidden lg:table-cell">
+                        <td className="px-2 sm:px-4 py-2.5 text-tepuy-600 text-[13px] hidden lg:table-cell">
                           {WORK_AREA_LABELS[s.work_area as keyof typeof WORK_AREA_LABELS] ?? s.work_area}
                         </td>
                         {/* Status — clickable dropdown */}
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-2 sm:px-4 py-2.5 text-center">
                           <QuickStatusMenu
                             solicitud={s}
                             onUpdated={handleUpdated}
@@ -581,16 +587,17 @@ export default function AdminSolicitudesPage() {
                           />
                         </td>
                         {/* Actions */}
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-2 sm:px-4 py-2.5 text-right">
                           <button
                             onClick={() => setViewingSolicitud(s)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-tepuy-200 text-[12px] font-semibold text-tepuy-600 hover:bg-tepuy-50 hover:border-tepuy-300 transition-colors cursor-pointer"
+                            title="Ver detalle"
+                            className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg border border-tepuy-200 text-[12px] font-semibold text-tepuy-600 hover:bg-tepuy-50 hover:border-tepuy-300 transition-colors cursor-pointer"
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                               <circle cx="12" cy="12" r="3" />
                             </svg>
-                            Ver detalle
+                            <span className="hidden sm:inline">Ver detalle</span>
                           </button>
                         </td>
                       </tr>

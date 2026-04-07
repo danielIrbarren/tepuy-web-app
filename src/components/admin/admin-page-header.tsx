@@ -63,7 +63,8 @@ function NavButton({ active, label, onClick, children }: NavButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors cursor-pointer ${
+      title={label}
+      className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-1.5 sm:px-3 text-[12px] font-semibold transition-colors cursor-pointer ${
         active
           ? "border-tepuy-300 bg-tepuy-50 text-tepuy-700"
           : "border-tepuy-200 bg-white text-tepuy-600 hover:bg-tepuy-50 hover:border-tepuy-300"
@@ -71,7 +72,7 @@ function NavButton({ active, label, onClick, children }: NavButtonProps) {
       aria-current={active ? "page" : undefined}
     >
       {children}
-      {label}
+      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }
@@ -147,14 +148,15 @@ export function AdminPageHeader({
           </NavButton>
           <button
             onClick={() => logoutAdmin(() => router.push("/admin/login"))}
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold text-tepuy-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 border border-transparent transition-colors cursor-pointer"
+            title="Salir"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 sm:px-3 text-[12px] font-semibold text-tepuy-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 border border-transparent transition-colors cursor-pointer"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" x2="9" y1="12" y2="12" />
             </svg>
-            Salir
+            <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
       </div>
