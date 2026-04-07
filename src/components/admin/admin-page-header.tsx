@@ -86,15 +86,15 @@ export function AdminPageHeader({
   return (
     <div
       className="border-b border-tepuy-100 bg-white px-4 py-3"
-      style={{ boxShadow: "0 1px 0 oklch(0.92 0.020 170), 0 2px 6px oklch(0 0 0 / 0.03)" }}
+      style={{ boxShadow: "0 1px 0 oklch(0.92 0.020 265), 0 2px 6px oklch(0 0 0 / 0.03)" }}
     >
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div
             className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
             style={{
-              background: "linear-gradient(145deg, oklch(0.56 0.140 170), oklch(0.40 0.105 170))",
-              boxShadow: "0 1px 3px oklch(0.48 0.125 170 / 0.35)",
+              background: "linear-gradient(145deg, #1e3d8f, #173077)",
+              boxShadow: "0 1px 4px rgba(23,48,119,0.35)",
             }}
           >
             <SectionIcon section={section} />

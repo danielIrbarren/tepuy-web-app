@@ -45,8 +45,7 @@ export default function AdminQRPage() {
                 <div
                   className="flex h-12 w-12 items-center justify-center rounded-xl shadow-sm"
                   style={{
-                    background:
-                      "linear-gradient(135deg, oklch(0.58 0.14 170), oklch(0.50 0.13 170))",
+                    background: "linear-gradient(135deg, #1e3d8f, #173077)",
                   }}
                 >
                   <svg

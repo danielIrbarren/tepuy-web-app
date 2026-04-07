@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -42,28 +43,17 @@ export default function AdminLoginPage() {
     <main className="flex-1 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm space-y-6 animate-slide-up">
         {/* Header */}
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div
-              className="h-16 w-16 rounded-2xl flex items-center justify-center shadow-lg"
-              style={{
-                background:
-                  "linear-gradient(135deg, oklch(0.50 0.13 170), oklch(0.43 0.11 170))",
-              }}
-            >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
+            <div className="rounded-xl overflow-hidden p-4 shadow-sm" style={{ background: "white", border: "1px solid oklch(0.91 0.016 265)" }}>
+              <Image
+                src="/sabra-ifm-logo.png"
+                alt="Sabra IFM"
+                width={140}
+                height={52}
+                className="h-12 w-auto object-contain"
+                priority
+              />
             </div>
           </div>
           <div>
@@ -71,7 +61,7 @@ export default function AdminLoginPage() {
               Panel de Administración
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Ingresa la contraseña de administrador
+              TEPUY · Ingrese la contraseña de administrador
             </p>
           </div>
         </div>

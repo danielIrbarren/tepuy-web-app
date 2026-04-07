@@ -47,18 +47,29 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* TEPUY brand palette — change these values to rebrand */
-  --color-tepuy-50:  oklch(0.97 0.018 170);
-  --color-tepuy-100: oklch(0.94 0.035 170);
-  --color-tepuy-200: oklch(0.88 0.065 170);
-  --color-tepuy-300: oklch(0.78 0.105 170);
-  --color-tepuy-400: oklch(0.67 0.135 170);
-  --color-tepuy-500: oklch(0.56 0.140 170);
-  --color-tepuy-600: oklch(0.48 0.125 170);
-  --color-tepuy-700: oklch(0.40 0.105 170);
-  --color-tepuy-800: oklch(0.33 0.082 170);
-  --color-tepuy-900: oklch(0.26 0.060 170);
-  --color-tepuy-950: oklch(0.18 0.040 170);
+  /* ─── Sabra IFM brand palette ───────────────────────────────────────────
+     Primary  : Royal Blue  #173077  (Pantone 288 C)
+     Accent   : Orange-Red  #D75535  (Pantone 7579 C)
+     Sky Blue : #7CC7ED              (Pantone 297 C)
+     Warm Gray: #EAE8E1              (Pantone 7527 C)
+  ─────────────────────────────────────────────────────────────────────── */
+  --color-tepuy-50:  oklch(0.97 0.010 265);
+  --color-tepuy-100: oklch(0.93 0.025 265);
+  --color-tepuy-200: oklch(0.87 0.052 265);
+  --color-tepuy-300: oklch(0.75 0.095 265);
+  --color-tepuy-400: oklch(0.60 0.130 265);
+  --color-tepuy-500: oklch(0.47 0.155 265);
+  --color-tepuy-600: oklch(0.38 0.155 265);
+  --color-tepuy-700: oklch(0.32 0.140 265);
+  --color-tepuy-800: oklch(0.27 0.120 265);
+  --color-tepuy-900: oklch(0.22 0.095 265);
+  --color-tepuy-950: oklch(0.16 0.065 265);
+
+  /* Sabra IFM accent colors — available as CSS vars */
+  --color-sabra-orange:    #D75535;
+  --color-sabra-skyblue:   #7CC7ED;
+  --color-sabra-warmgray:  #EAE8E1;
+  --color-sabra-navy:      #173077;
 
   /* Animation durations */
   --animate-duration-fast: 150ms;
@@ -66,74 +77,74 @@
   --animate-duration-slow: 500ms;
 }
 
-/* ─── Theme tokens — TEPUY teal as primary ─── */
+/* ─── Theme tokens — Sabra IFM Royal Blue as primary ─── */
 :root {
-  --background: oklch(0.978 0.004 200);
-  --foreground: oklch(0.16 0.022 170);
+  --background: oklch(0.978 0.005 265);
+  --foreground: oklch(0.15 0.060 265);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.16 0.022 170);
+  --card-foreground: oklch(0.15 0.060 265);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.16 0.022 170);
-  --primary: oklch(0.48 0.125 170);
-  --primary-foreground: oklch(0.99 0.004 170);
-  --secondary: oklch(0.96 0.012 170);
-  --secondary-foreground: oklch(0.24 0.040 170);
-  --muted: oklch(0.96 0.008 170);
-  --muted-foreground: oklch(0.52 0.022 170);
-  --accent: oklch(0.94 0.032 170);
-  --accent-foreground: oklch(0.24 0.040 170);
+  --popover-foreground: oklch(0.15 0.060 265);
+  --primary: oklch(0.38 0.155 265);
+  --primary-foreground: oklch(0.99 0.004 265);
+  --secondary: oklch(0.96 0.010 265);
+  --secondary-foreground: oklch(0.22 0.060 265);
+  --muted: oklch(0.96 0.006 265);
+  --muted-foreground: oklch(0.52 0.020 265);
+  --accent: oklch(0.93 0.025 265);
+  --accent-foreground: oklch(0.22 0.060 265);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.018 170);
-  --input: oklch(0.92 0.018 170);
-  --ring: oklch(0.56 0.140 170);
-  --chart-1: oklch(0.56 0.140 170);
-  --chart-2: oklch(0.67 0.135 170);
-  --chart-3: oklch(0.78 0.105 170);
-  --chart-4: oklch(0.48 0.125 170);
-  --chart-5: oklch(0.40 0.105 170);
+  --border: oklch(0.91 0.016 265);
+  --input: oklch(0.91 0.016 265);
+  --ring: oklch(0.47 0.155 265);
+  --chart-1: oklch(0.47 0.155 265);
+  --chart-2: oklch(0.60 0.130 265);
+  --chart-3: oklch(0.75 0.095 265);
+  --chart-4: oklch(0.38 0.155 265);
+  --chart-5: oklch(0.32 0.140 265);
   --radius: 0.625rem;
   --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.16 0.022 170);
-  --sidebar-primary: oklch(0.48 0.125 170);
-  --sidebar-primary-foreground: oklch(0.99 0.004 170);
-  --sidebar-accent: oklch(0.94 0.032 170);
-  --sidebar-accent-foreground: oklch(0.24 0.040 170);
-  --sidebar-border: oklch(0.92 0.018 170);
-  --sidebar-ring: oklch(0.56 0.140 170);
+  --sidebar-foreground: oklch(0.15 0.060 265);
+  --sidebar-primary: oklch(0.38 0.155 265);
+  --sidebar-primary-foreground: oklch(0.99 0.004 265);
+  --sidebar-accent: oklch(0.93 0.025 265);
+  --sidebar-accent-foreground: oklch(0.22 0.060 265);
+  --sidebar-border: oklch(0.91 0.016 265);
+  --sidebar-ring: oklch(0.47 0.155 265);
 }
 
 .dark {
-  --background: oklch(0.13 0.018 170);
-  --foreground: oklch(0.96 0.010 170);
-  --card: oklch(0.18 0.020 170);
-  --card-foreground: oklch(0.96 0.010 170);
-  --popover: oklch(0.18 0.020 170);
-  --popover-foreground: oklch(0.96 0.010 170);
-  --primary: oklch(0.67 0.135 170);
-  --primary-foreground: oklch(0.13 0.018 170);
-  --secondary: oklch(0.24 0.030 170);
-  --secondary-foreground: oklch(0.96 0.010 170);
-  --muted: oklch(0.24 0.028 170);
-  --muted-foreground: oklch(0.64 0.040 170);
-  --accent: oklch(0.24 0.028 170);
-  --accent-foreground: oklch(0.96 0.010 170);
+  --background: oklch(0.13 0.020 265);
+  --foreground: oklch(0.96 0.008 265);
+  --card: oklch(0.18 0.022 265);
+  --card-foreground: oklch(0.96 0.008 265);
+  --popover: oklch(0.18 0.022 265);
+  --popover-foreground: oklch(0.96 0.008 265);
+  --primary: oklch(0.60 0.130 265);
+  --primary-foreground: oklch(0.13 0.020 265);
+  --secondary: oklch(0.24 0.032 265);
+  --secondary-foreground: oklch(0.96 0.008 265);
+  --muted: oklch(0.24 0.028 265);
+  --muted-foreground: oklch(0.64 0.036 265);
+  --accent: oklch(0.24 0.028 265);
+  --accent-foreground: oklch(0.96 0.008 265);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.56 0.140 170);
-  --chart-1: oklch(0.67 0.135 170);
-  --chart-2: oklch(0.56 0.140 170);
-  --chart-3: oklch(0.78 0.105 170);
-  --chart-4: oklch(0.48 0.125 170);
-  --chart-5: oklch(0.40 0.105 170);
-  --sidebar: oklch(0.18 0.020 170);
-  --sidebar-foreground: oklch(0.96 0.010 170);
-  --sidebar-primary: oklch(0.67 0.135 170);
-  --sidebar-primary-foreground: oklch(0.13 0.018 170);
-  --sidebar-accent: oklch(0.24 0.028 170);
-  --sidebar-accent-foreground: oklch(0.96 0.010 170);
+  --ring: oklch(0.47 0.155 265);
+  --chart-1: oklch(0.60 0.130 265);
+  --chart-2: oklch(0.47 0.155 265);
+  --chart-3: oklch(0.75 0.095 265);
+  --chart-4: oklch(0.38 0.155 265);
+  --chart-5: oklch(0.32 0.140 265);
+  --sidebar: oklch(0.18 0.022 265);
+  --sidebar-foreground: oklch(0.96 0.008 265);
+  --sidebar-primary: oklch(0.60 0.130 265);
+  --sidebar-primary-foreground: oklch(0.13 0.020 265);
+  --sidebar-accent: oklch(0.24 0.028 265);
+  --sidebar-accent-foreground: oklch(0.96 0.008 265);
   --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.56 0.140 170);
+  --sidebar-ring: oklch(0.47 0.155 265);
 }
 
 /* ─── Custom Animations ─── */
@@ -246,12 +257,12 @@
 .stagger-children > *:nth-child(7) { animation-delay: 330ms; }
 .stagger-children > *:nth-child(8) { animation-delay: 385ms; }
 
-/* ─── Input focus glow ─── */
+/* ─── Input focus glow — Royal Blue ─── */
 [data-slot="input"]:focus-visible,
 [data-slot="textarea"]:focus-visible {
-  border-color: oklch(0.56 0.140 170) !important;
+  border-color: oklch(0.47 0.155 265) !important;
   box-shadow:
-    0 0 0 3px oklch(0.56 0.140 170 / 0.12),
+    0 0 0 3px oklch(0.47 0.155 265 / 0.12),
     0 1px 2px oklch(0 0 0 / 0.04) !important;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -261,43 +272,43 @@
   background: oklch(1 0 0) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid oklch(0.92 0.020 170) !important;
+  border: 1px solid oklch(0.91 0.016 265) !important;
   box-shadow:
     0 1px 2px oklch(0 0 0 / 0.04),
     0 2px 8px oklch(0 0 0 / 0.06),
-    0 8px 24px oklch(0.48 0.125 170 / 0.05) !important;
+    0 8px 24px oklch(0.38 0.155 265 / 0.06) !important;
 }
 
-/* ─── Subtle brand-tinted background ─── */
+/* ─── Subtle brand-tinted background — very light Royal Blue wash ─── */
 .bg-tepuy-mesh {
-  background-color: oklch(0.978 0.004 200);
+  background-color: oklch(0.978 0.005 265);
   background-image:
-    radial-gradient(ellipse at 0% 0%,   oklch(0.88 0.065 170 / 0.12) 0px, transparent 55%),
-    radial-gradient(ellipse at 100% 100%, oklch(0.88 0.065 170 / 0.08) 0px, transparent 55%);
+    radial-gradient(ellipse at 0% 0%,   oklch(0.87 0.052 265 / 0.10) 0px, transparent 55%),
+    radial-gradient(ellipse at 100% 100%, oklch(0.87 0.052 265 / 0.07) 0px, transparent 55%);
 }
 
-/* ─── Premium CTA button ─── */
+/* ─── Primary CTA button — Sabra IFM Royal Blue ─── */
 .btn-tepuy {
-  background: oklch(0.48 0.125 170) !important;
+  background: oklch(0.38 0.155 265) !important;
   box-shadow:
-    0 1px 2px oklch(0 0 0 / 0.12),
-    0 2px 8px oklch(0.48 0.125 170 / 0.28) !important;
+    0 1px 2px oklch(0 0 0 / 0.14),
+    0 2px 8px oklch(0.38 0.155 265 / 0.30) !important;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-tepuy:hover:not(:disabled) {
-  background: oklch(0.42 0.115 170) !important;
+  background: oklch(0.32 0.140 265) !important;
   box-shadow:
-    0 4px 12px oklch(0.48 0.125 170 / 0.38),
-    0 1px 3px oklch(0 0 0 / 0.10) !important;
+    0 4px 12px oklch(0.38 0.155 265 / 0.40),
+    0 1px 3px oklch(0 0 0 / 0.12) !important;
   transform: translateY(-1px);
 }
 .btn-tepuy:active:not(:disabled) {
   transform: translateY(0px);
   box-shadow:
-    0 1px 4px oklch(0.48 0.125 170 / 0.25) !important;
+    0 1px 4px oklch(0.38 0.155 265 / 0.25) !important;
 }
 .btn-tepuy:disabled {
-  background: oklch(0.84 0.030 170) !important;
+  background: oklch(0.84 0.020 265) !important;
   box-shadow: none !important;
   color: oklch(1 0 0 / 0.55);
 }

@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {
+    root: "/Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/tepuy-web-app",
+  },
 };
 
 export default nextConfig;

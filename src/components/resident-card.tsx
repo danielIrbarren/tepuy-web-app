@@ -77,8 +77,8 @@ export function ResidentCard({ resident, compact }: ResidentCardProps) {
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        border: "1px solid oklch(0.92 0.020 170)",
-        boxShadow: "0 1px 3px oklch(0 0 0 / 0.05), 0 4px 16px oklch(0.48 0.125 170 / 0.08)",
+        border: "1px solid oklch(0.92 0.020 265)",
+        boxShadow: "0 1px 3px oklch(0 0 0 / 0.05), 0 4px 16px oklch(0.48 0.125 265 / 0.08)",
       }}
     >
       {/* Header — clickable toggle */}
@@ -88,7 +88,7 @@ export function ResidentCard({ resident, compact }: ResidentCardProps) {
         className="w-full px-5 py-4 flex items-center justify-between cursor-pointer"
         style={{
           background:
-            "linear-gradient(135deg, oklch(0.40 0.105 170) 0%, oklch(0.56 0.140 170) 60%, oklch(0.67 0.135 170) 100%)",
+            "linear-gradient(135deg, #173077 0%, #1e3d8f 55%, #7CC7ED 100%)",
         }}
       >
         <div className="text-left">

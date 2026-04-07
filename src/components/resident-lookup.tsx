@@ -92,8 +92,8 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
           <div
             className="h-14 w-14 rounded-2xl flex items-center justify-center"
             style={{
-              background: "linear-gradient(145deg, oklch(0.56 0.140 170), oklch(0.40 0.105 170))",
-              boxShadow: "0 4px 16px oklch(0.48 0.125 170 / 0.30), 0 1px 3px oklch(0 0 0 / 0.10)",
+              background: "linear-gradient(145deg, #1e3d8f, #173077)",
+              boxShadow: "0 4px 16px rgba(23,48,119,0.28), 0 1px 3px rgba(0,0,0,0.10)",
             }}
           >
             <svg

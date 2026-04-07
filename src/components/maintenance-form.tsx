@@ -189,8 +189,8 @@ export function MaintenanceForm({
       <div
         className="rounded-2xl p-5 space-y-6 bg-white"
         style={{
-          border: "1px solid oklch(0.92 0.020 170)",
-          boxShadow: "0 1px 3px oklch(0 0 0 / 0.04), 0 4px 16px oklch(0.48 0.125 170 / 0.06)",
+          border: "1px solid oklch(0.92 0.020 265)",
+          boxShadow: "0 1px 3px oklch(0 0 0 / 0.04), 0 4px 16px oklch(0.48 0.125 265 / 0.06)",
         }}
       >
 
@@ -204,7 +204,7 @@ export function MaintenanceForm({
             <div
               className="h-full rounded-full progress-fill"
               style={{
-                background: "linear-gradient(90deg, oklch(0.56 0.140 170), oklch(0.67 0.135 170))",
+                background: "linear-gradient(90deg, #173077, #7CC7ED)",
                 width: `${formProgress}%`,
               }}
             />
@@ -357,7 +357,7 @@ export function MaintenanceForm({
                 className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${Math.min((descriptionLength / 1000) * 100, 100)}%`,
-                  background: descriptionLength > 1000 ? "oklch(0.577 0.245 27)" : descriptionLength > 800 ? "oklch(0.7 0.15 70)" : "oklch(0.56 0.140 170)",
+                  background: descriptionLength > 1000 ? "oklch(0.577 0.245 27)" : descriptionLength > 800 ? "oklch(0.7 0.15 70)" : "#173077",
                 }}
               />
             </div>

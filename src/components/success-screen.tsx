@@ -20,7 +20,7 @@ export function SuccessScreen({ response, onNewRequest }: SuccessScreenProps) {
           <div className="absolute inset-0 rounded-full bg-tepuy-400/10 animate-pulse-ring [animation-delay:0.3s]" />
 
           {/* Main circle */}
-          <div className="relative h-20 w-20 rounded-full flex items-center justify-center shadow-lg animate-scale-in" style={{ background: "linear-gradient(135deg, oklch(0.68 0.14 170), oklch(0.50 0.13 170))", boxShadow: "0 10px 25px oklch(0.50 0.13 170 / 0.3)" }}>
+          <div className="relative h-20 w-20 rounded-full flex items-center justify-center shadow-lg animate-scale-in" style={{ background: "linear-gradient(135deg, #1e3d8f, #173077)", boxShadow: "0 10px 25px rgba(23,48,119,0.30)" }}>
             <svg
               width="36"
               height="36"
@@ -52,7 +52,7 @@ export function SuccessScreen({ response, onNewRequest }: SuccessScreenProps) {
       {/* Reference ID card */}
       <div className="glass-card rounded-2xl overflow-hidden animate-count-up">
         {/* Accent top */}
-        <div className="h-1" style={{ background: "linear-gradient(to right, oklch(0.68 0.14 170), oklch(0.58 0.14 170), oklch(0.68 0.14 170))" }} />
+        <div className="h-1" style={{ background: "linear-gradient(to right, #7CC7ED, #173077, #D75535)" }} />
         <div className="p-6">
           <p className="text-xs font-medium text-tepuy-400 uppercase tracking-widest mb-2">
             Número de referencia

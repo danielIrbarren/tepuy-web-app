@@ -32,53 +32,60 @@ export default function Home() {
       <div className="w-full max-w-md space-y-7">
 
         {/* ─── Step indicator ─── */}
-        <div className="flex items-start justify-between">
+        <div className="relative flex items-start w-full">
+          {/* Connector lines drawn behind the circles */}
+          <div
+            className="absolute h-px rounded-full transition-colors duration-500"
+            style={{
+              top: "14px",
+              left: "calc(100% / 6)",
+              right: "calc(100% / 6)",
+              background: currentIndex > 0 ? "#173077" : "oklch(0.92 0.020 265)",
+            }}
+          />
+          {/* Second connector segment colored separately based on step 2 completion */}
+          <div
+            className="absolute h-px rounded-full transition-colors duration-500"
+            style={{
+              top: "14px",
+              left: "50%",
+              right: "calc(100% / 6)",
+              background: currentIndex > 1 ? "#173077" : "oklch(0.92 0.020 265)",
+            }}
+          />
+
           {STEPS.map((s, i) => {
             const isDone   = currentIndex > i;
             const isActive = currentIndex === i;
             return (
-              <div key={s.key} className="flex items-center flex-1">
-                {/* Step node */}
-                <div className="flex flex-col items-center gap-1.5 shrink-0">
-                  <div
-                    className={`
-                      h-7 w-7 rounded-full flex items-center justify-center
-                      text-[11px] font-bold border-2 transition-all duration-400
-                      ${isDone
-                        ? "border-tepuy-500 bg-tepuy-500 text-white"
-                        : isActive
-                          ? "border-tepuy-500 bg-white text-tepuy-600 shadow-sm"
-                          : "border-tepuy-200 bg-white text-tepuy-300"}
-                    `}
-                    style={isActive ? { boxShadow: "0 0 0 4px oklch(0.56 0.140 170 / 0.12)" } : undefined}
-                  >
-                    {isDone ? (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
-                    ) : (
-                      i + 1
-                    )}
-                  </div>
-                  <span
-                    className={`text-[10px] font-semibold tracking-wide whitespace-nowrap transition-colors duration-300 ${
-                      isActive ? "text-tepuy-700" : isDone ? "text-tepuy-500" : "text-tepuy-300"
-                    }`}
-                  >
-                    {s.label}
-                  </span>
+              <div key={s.key} className="flex-1 flex flex-col items-center gap-1.5 z-10">
+                <div
+                  className={`
+                    h-7 w-7 rounded-full flex items-center justify-center
+                    text-[11px] font-bold border-2 transition-all duration-400
+                    ${isDone
+                      ? "border-tepuy-500 bg-tepuy-500 text-white"
+                      : isActive
+                        ? "border-tepuy-500 bg-white text-tepuy-600 shadow-sm"
+                        : "border-tepuy-200 bg-white text-tepuy-300"}
+                  `}
+                  style={isActive ? { boxShadow: "0 0 0 4px rgba(23,48,119,0.12)" } : undefined}
+                >
+                  {isDone ? (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  ) : (
+                    i + 1
+                  )}
                 </div>
-
-                {/* Connector line between steps */}
-                {i < STEPS.length - 1 && (
-                  <div className="flex-1 h-px mx-2 mb-4 transition-colors duration-500 rounded-full"
-                    style={{
-                      background: currentIndex > i
-                        ? "oklch(0.56 0.140 170)"
-                        : "oklch(0.92 0.020 170)",
-                    }}
-                  />
-                )}
+                <span
+                  className={`text-[10px] font-semibold tracking-wide whitespace-nowrap transition-colors duration-300 ${
+                    isActive ? "text-tepuy-700" : isDone ? "text-tepuy-500" : "text-tepuy-300"
+                  }`}
+                >
+                  {s.label}
+                </span>
               </div>
             );
           })}

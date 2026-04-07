@@ -29,7 +29,26 @@
       "Bash(node -e \"const n = require\\(''''/Users/danielairibarren/workspace-projects/tepuy-web-app/node_modules/next''''\\); console.log\\(Object.keys\\(n\\)\\)\")",
       "Bash(git mv:*)",
       "Bash(git rm:*)",
-      "Bash(SUPABASE_SERVICE_ROLE_KEY=dummy npm run build)"
+      "Bash(SUPABASE_SERVICE_ROLE_KEY=dummy npm run build)",
+      "Bash(brew install:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(pip3 install:*)",
+      "Bash(cp \"/Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/fwdmanualdemarcaylogos_/SIFM_LogosFinales_PNG-01.png\" \"/Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/tepuy-web-app/public/sabra-ifm-logo.png\")",
+      "Bash(cp \"/Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/fwdmanualdemarcaylogos_/SIFM_LogosFinales_PNG-03.png\" \"/Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/tepuy-web-app/public/sabra-ifm-logo-white.png\")",
+      "Bash(while read:*)",
+      "Bash(do sed:*)",
+      "Bash(sed -i '' 's|background: \"\"linear-gradient\\(145deg, oklch\\(0.56 0.140 265\\), oklch\\(0.40 0.105 265\\)\\)\"\",|background: \"\"linear-gradient\\(145deg, #1e3d8f, #173077\\)\"\",|g' src/components/resident-lookup.tsx)",
+      "Bash(sed -i '' 's|boxShadow: \"\"0 4px 16px oklch\\(0.48 0.125 265 / 0.30\\), 0 1px 3px oklch\\(0 0 0 / 0.10\\)\"\",|boxShadow: \"\"0 4px 16px rgba\\(23,48,119,0.28\\), 0 1px 3px rgba\\(0,0,0,0.10\\)\"\",|g' src/components/resident-lookup.tsx)",
+      "Bash(sed -i '' 's|boxShadow: \"\"0 0 0 4px oklch\\(0.56 0.140 265 / 0.12\\)\"\"|boxShadow: \"\"0 0 0 4px rgba\\(23,48,119,0.12\\)\"\"|g' src/app/page.tsx)",
+      "Bash(sed -i '' 's|\"\"oklch\\(0.56 0.140 265\\)\"\"|\"\"#173077\"\"|g' src/app/page.tsx)",
+      "Read(//usr/local/bin/**)",
+      "Bash(chmod +x /Users/nicolagabrielecolarusso/Desktop/Universidad_Gabriele/ChambaDaniel/tepuy-web-app/.claude/dev.sh)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -v --max-time 5 http://localhost:3000/)",
+      "Bash(curl -v --max-time 5 http://172.16.0.4:3000/)",
+      "Bash(ps -o pid,ppid,rss,args)",
+      "Bash(ps -p 15322,15325 -o pid,ppid,rss,comm)",
+      "Bash(curl -6 --max-time 5 http://localhost:3000/ -o /dev/null -w \"%{http_code}\\\\n\")"
     ]
   }
 }

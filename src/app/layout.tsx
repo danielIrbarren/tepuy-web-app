@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins, Geist_Mono } from "next/font/google";
+import Image from "next/image";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -13,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TEPUY — Portal de Mantenimiento",
+  title: "Sabra IFM — Portal de Mantenimiento TEPUY",
   description:
-    "Portal público de solicitudes de mantenimiento para residentes de TEPUY.",
+    "Portal público de solicitudes de mantenimiento para residentes de TEPUY. Gestionado por Sabra IFM.",
 };
 
 export const viewport: Viewport = {
@@ -23,7 +26,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#0d9488",
+  themeColor: "#173077",
 };
 
 export default function RootLayout({
@@ -34,48 +37,40 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${poppins.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-tepuy-mesh text-foreground">
         {/* Header */}
-        <header className="sticky top-0 z-50 w-full bg-white border-b border-tepuy-100"
-          style={{ boxShadow: "0 1px 0 oklch(0.92 0.020 170), 0 2px 8px oklch(0 0 0 / 0.04)" }}>
-          {/* Brand accent line */}
+        <header
+          className="sticky top-0 z-50 w-full bg-white border-b border-tepuy-100"
+          style={{ boxShadow: "0 1px 0 oklch(0.91 0.016 265), 0 2px 8px oklch(0 0 0 / 0.04)" }}
+        >
+          {/* Brand accent line — mirrors the Sabra IFM logo columns: sky-blue → navy → orange */}
           <div
             className="h-[3px] w-full"
             style={{
-              background: "linear-gradient(90deg, oklch(0.56 0.140 170) 0%, oklch(0.67 0.135 170) 60%, oklch(0.78 0.105 170) 100%)",
+              background: "linear-gradient(90deg, #7CC7ED 0%, #173077 55%, #D75535 100%)",
             }}
           />
-          <div className="flex h-12 items-center justify-center px-4">
+          <div className="flex h-14 items-center justify-center px-4">
             <div className="flex items-center gap-3">
-              {/* Logotype mark */}
-              <div
-                className="flex h-7 w-7 items-center justify-center rounded-md"
-                style={{
-                  background: "linear-gradient(145deg, oklch(0.56 0.140 170), oklch(0.40 0.105 170))",
-                  boxShadow: "0 1px 3px oklch(0.48 0.125 170 / 0.35)",
-                }}
-              >
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
-                </svg>
-              </div>
-              {/* Text */}
+              {/* Sabra IFM logo */}
+              <Image
+                src="/sabra-ifm-logo.png"
+                alt="Sabra IFM"
+                width={110}
+                height={40}
+                className="h-8 w-auto object-contain"
+                priority
+              />
+              {/* Separator */}
+              <div className="h-6 w-px bg-tepuy-200" />
+              {/* Property label */}
               <div className="flex flex-col leading-none gap-0.5">
-                <span className="text-[13px] font-bold tracking-[0.06em] text-tepuy-900">
+                <span className="text-[13px] font-semibold tracking-[0.06em] text-tepuy-900">
                   TEPUY
                 </span>
-                <span className="text-[9px] font-semibold text-tepuy-400 tracking-[0.12em] uppercase">
+                <span className="text-[9px] font-medium text-tepuy-400 tracking-[0.14em] uppercase">
                   Mantenimiento
                 </span>
               </div>
@@ -89,7 +84,7 @@ export default function RootLayout({
         {/* Footer */}
         <footer className="py-5 text-center border-t border-tepuy-100/60">
           <p className="text-[11px] text-tepuy-300 tracking-wide">
-            TEPUY &middot; Portal de Mantenimiento &middot; {new Date().getFullYear()}
+            Sabra IFM &middot; TEPUY &middot; Portal de Mantenimiento &middot; {new Date().getFullYear()}
           </p>
         </footer>
       </body>

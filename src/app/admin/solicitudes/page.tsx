@@ -138,7 +138,7 @@ function QuickStatusMenu({
           className="absolute top-full left-0 mt-1.5 z-30 rounded-xl overflow-hidden min-w-[156px] animate-slide-down"
           style={{
             background: "white",
-            border: "1px solid oklch(0.92 0.020 170)",
+            border: "1px solid oklch(0.92 0.020 265)",
             boxShadow: "0 4px 16px oklch(0 0 0 / 0.10), 0 1px 4px oklch(0 0 0 / 0.06)",
           }}
         >
@@ -232,7 +232,7 @@ function SolicitudModal({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div
         className="relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl overflow-hidden animate-slide-up max-h-[92dvh] flex flex-col"
-        style={{ background: "white", boxShadow: "0 -4px 32px oklch(0 0 0 / 0.15), 0 1px 0 oklch(0.92 0.020 170)" }}
+        style={{ background: "white", boxShadow: "0 -4px 32px oklch(0 0 0 / 0.15), 0 1px 0 oklch(0.92 0.020 265)" }}
       >
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
@@ -242,7 +242,7 @@ function SolicitudModal({
         {/* Modal header */}
         <div
           className="flex items-center justify-between px-5 py-4 border-b border-tepuy-100"
-          style={{ background: "linear-gradient(135deg, oklch(0.40 0.105 170), oklch(0.56 0.140 170))" }}
+          style={{ background: "linear-gradient(135deg, #173077, #1e3d8f)" }}
         >
           <div>
             <h2 className="text-[15px] font-bold text-white tracking-tight">
@@ -270,7 +270,7 @@ function SolicitudModal({
           {/* Key details */}
           <div
             className="rounded-xl px-4 py-1"
-            style={{ background: "oklch(0.978 0.004 200)", border: "1px solid oklch(0.92 0.020 170)" }}
+            style={{ background: "oklch(0.978 0.004 200)", border: "1px solid oklch(0.92 0.020 265)" }}
           >
             <DetailRow label="Área de trabajo" value={WORK_AREA_LABELS[solicitud.work_area as keyof typeof WORK_AREA_LABELS] ?? solicitud.work_area} />
             <DetailRow label="Descripción" value={solicitud.description} />
@@ -512,12 +512,12 @@ export default function AdminSolicitudesPage() {
         <div className="max-w-6xl mx-auto">
           <div
             className="rounded-2xl overflow-hidden bg-white"
-            style={{ border: "1px solid oklch(0.92 0.020 170)", boxShadow: "0 1px 3px oklch(0 0 0 / 0.04), 0 4px 16px oklch(0.48 0.125 170 / 0.05)" }}
+            style={{ border: "1px solid oklch(0.92 0.020 265)", boxShadow: "0 1px 3px oklch(0 0 0 / 0.04), 0 4px 16px oklch(0.48 0.125 265 / 0.05)" }}
           >
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: "oklch(0.978 0.004 200)", borderBottom: "1px solid oklch(0.92 0.020 170)" }}>
+                  <tr style={{ background: "oklch(0.978 0.004 200)", borderBottom: "1px solid oklch(0.92 0.020 265)" }}>
                     <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Fecha</th>
                     <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">CI</th>
                     <th className="text-left px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden sm:table-cell">Nombre</th>
