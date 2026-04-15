@@ -49,6 +49,22 @@ enum WebhookStatusType {
   @@map("webhook_status_type")
 }
 
+enum CriticalityType {
+  urgente
+  importante
+
+  @@map("criticality_type")
+}
+
+enum RequestStatusType {
+  pendiente
+  en_proceso
+  completado
+  cancelado
+
+  @@map("request_status_type")
+}
+
 // ─────────────────────────────────────────────
 // TABLE: residents
 // ─────────────────────────────────────────────
@@ -94,6 +110,7 @@ model MaintenanceRequest {
   gerencia              String?   @db.VarChar(100)
   // Datos de la solicitud
   workArea              WorkAreaType @map("work_area")
+  criticality           CriticalityType @default(importante)
   description           String    @db.Text
   preferredTime         String?   @map("preferred_time") @db.VarChar(255)
   accessNotes           String?   @map("access_notes") @db.Text
@@ -106,12 +123,16 @@ model MaintenanceRequest {
   // Auditoría
   createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  // Admin
+  requestStatus         RequestStatusType @default(pendiente) @map("request_status")
+  adminNotes            String?   @map("admin_notes") @db.Text
 
   resident              Resident  @relation(fields: [residentId], references: [id], onDelete: Restrict)
 
   @@index([residentId], map: "idx_maintenance_requests_resident_id")
   @@index([webhookStatus], map: "idx_maintenance_requests_webhook_status")
   @@index([createdAt(sort: Desc)], map: "idx_maintenance_requests_created_at")
+  @@index([requestStatus], map: "idx_maintenance_requests_request_status")
   @@map("maintenance_requests")
 }
 
