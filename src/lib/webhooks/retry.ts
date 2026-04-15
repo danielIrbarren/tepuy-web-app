@@ -60,7 +60,7 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
     const { data: failedRequests, error: fetchError } = await supabaseAdmin
       .from("maintenance_requests")
       .select(
-        "id, request_id:id, ci_usuario, nombre_usuario, nro_apto, descripcion_inmueble, tlf_usuario, gerencia, work_area, description, preferred_time, access_notes, created_at, retry_count, updated_at"
+        "id, request_id:id, ci_usuario, nombre_usuario, nro_apto, descripcion_inmueble, tlf_usuario, gerencia, work_area, criticality, description, preferred_time, access_notes, created_at, retry_count, updated_at"
       )
       .eq("webhook_status", "failed")
       .lt("retry_count", MAX_RETRIES)
@@ -108,6 +108,7 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
         tlf_usuario: req.tlf_usuario as string | null,
         gerencia: req.gerencia as string | null,
         work_area: req.work_area as string,
+        criticality: req.criticality as "urgente" | "importante",
         description: req.description as string,
         preferred_time: req.preferred_time as string | null,
         access_notes: req.access_notes as string | null,

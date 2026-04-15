@@ -171,6 +171,7 @@ export async function POST(request: NextRequest) {
           tlf_usuario: resident.tlf_usuario,
           gerencia: resident.gerencia,
           work_area,
+          criticality,
           description,
           preferred_time: preferred_time || null,
           access_notes: access_notes || null,

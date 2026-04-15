@@ -26,6 +26,7 @@ export interface MakeWebhookPayload {
   gerencia: string | null;
   // Datos de la solicitud
   work_area: string;
+  criticality: "urgente" | "importante";
   description: string;
   preferred_time: string | null;
   access_notes: string | null;
@@ -74,7 +75,7 @@ export async function triggerMakeWebhook(
   const timeoutId = setTimeout(() => controller.abort(), 10_000);
 
   try {
-    log("info", "Disparando webhook Make.com", { request_id: payload.request_id, work_area: payload.work_area });
+    log("info", "Disparando webhook Make.com", { request_id: payload.request_id, work_area: payload.work_area, criticality: payload.criticality });
 
     const response = await fetch(webhookUrl, {
       method: "POST",
