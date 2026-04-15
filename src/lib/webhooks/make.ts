@@ -49,6 +49,27 @@ export interface MakeWebhookResult {
   reason?: string;
 }
 
+// ─── Normalización de teléfono venezolano a E.164 ────────────────────────
+
+/**
+ * Convierte teléfonos venezolanos en cualquier formato local a E.164.
+ * Ejemplos:
+ *   "0424-6897123"     → "+584246897123"
+ *   "0412 976 1234"    → "+584129761234"
+ *   "+58 424 689 7123" → "+584246897123"
+ *   "4246897123"       → "+584246897123"
+ *   "0212-5551234"     → "+582125551234"
+ *   "" | null          → null
+ */
+function normalizeVenezuelanPhone(raw: string | null): string | null {
+  if (!raw) return null;
+  let digits = raw.replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("0")) digits = digits.slice(1);
+  if (!digits.startsWith("58")) digits = "58" + digits;
+  return "+" + digits;
+}
+
 // ─── Función principal ───────────────────────────────────────────────────
 
 /**
@@ -60,6 +81,7 @@ export async function triggerMakeWebhook(
   payload: MakeWebhookPayload
 ): Promise<MakeWebhookResult> {
   const webhookUrl = process.env.MAKE_WEBHOOK_URL;
+  const apiKey = process.env.MAKE_WEBHOOK_API_KEY;
 
   if (!webhookUrl) {
     log("warn", "MAKE_WEBHOOK_URL no configurado — webhook omitido", { request_id: payload.request_id });
@@ -75,17 +97,29 @@ export async function triggerMakeWebhook(
   const timeoutId = setTimeout(() => controller.abort(), 10_000);
 
   try {
-    log("info", "Disparando webhook Make.com", { request_id: payload.request_id, work_area: payload.work_area, criticality: payload.criticality });
+    log("info", "Disparando webhook Make.com", { request_id: payload.request_id, work_area: payload.work_area, criticality: payload.criticality, auth: apiKey ? "api-key" : "none" });
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      // Header de identificación para Make.com
+      "X-Tepuy-Source": "tepuy-web-app",
+      "X-Tepuy-Request-Id": payload.request_id,
+    };
+
+    // Make.com API Key Authentication — header fijo esperado por el gateway
+    if (apiKey) {
+      headers["x-make-apikey"] = apiKey;
+    }
+
+    const normalizedPayload: MakeWebhookPayload = {
+      ...payload,
+      tlf_usuario: normalizeVenezuelanPhone(payload.tlf_usuario),
+    };
 
     const response = await fetch(webhookUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // Header de identificación para Make.com
-        "X-Tepuy-Source": "tepuy-web-app",
-        "X-Tepuy-Request-Id": payload.request_id,
-      },
-      body: JSON.stringify(payload),
+      headers,
+      body: JSON.stringify(normalizedPayload),
       signal: controller.signal,
     });
 
