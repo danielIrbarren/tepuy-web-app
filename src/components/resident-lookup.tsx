@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { normalizeCi } from "@/lib/utils/normalize-ci";
 import type {
@@ -87,29 +88,16 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
 
       {/* Hero */}
       <div className="text-center space-y-4 mb-8">
-        {/* Icon mark */}
+        {/* Brand mark */}
         <div className="flex justify-center">
-          <div
-            className="h-14 w-14 rounded-2xl flex items-center justify-center"
-            style={{
-              background: "linear-gradient(145deg, #1e3d8f, #173077)",
-              boxShadow: "0 4px 16px rgba(23,48,119,0.28), 0 1px 3px rgba(0,0,0,0.10)",
-            }}
-          >
-            <svg
-              width="26"
-              height="26"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-          </div>
+          <Image
+            src="/pdvsa-petroindependencia-logo.png"
+            alt="PDVSA Petroindependencia"
+            width={200}
+            height={128}
+            priority
+            className="h-auto w-auto max-h-20 object-contain"
+          />
         </div>
 
         {/* Heading */}
