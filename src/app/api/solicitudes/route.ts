@@ -65,8 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { resident_id, work_area, criticality, description, preferred_time, access_notes } =
-      parsed.data;
+    const { resident_id, work_area, criticality, description } = parsed.data;
 
     // 2. Re-validate resident exists and is active (security: don't trust client state)
     const { data: resident, error: dbError } = await supabaseAdmin
@@ -124,11 +123,11 @@ export async function POST(request: NextRequest) {
         nro_apto: resident.nro_apto,
         tlf_usuario: resident.tlf_usuario,
         gerencia: resident.gerencia,
+        supervisor_nombre: resident.supervisor_nombre,
+        supervisor_tlf: resident.supervisor_tlf,
         work_area,
         criticality,
         description,
-        preferred_time: preferred_time || null,
-        access_notes: access_notes || null,
       })
       .select("id")
       .single();
@@ -170,11 +169,11 @@ export async function POST(request: NextRequest) {
           descripcion_inmueble: resident.descripcion_inmueble,
           tlf_usuario: resident.tlf_usuario,
           gerencia: resident.gerencia,
+          supervisor_nombre: resident.supervisor_nombre,
+          supervisor_tlf: resident.supervisor_tlf,
           work_area,
           criticality,
           description,
-          preferred_time: preferred_time || null,
-          access_notes: access_notes || null,
           created_at: new Date().toISOString(),
         });
 

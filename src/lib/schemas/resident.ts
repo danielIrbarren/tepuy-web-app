@@ -28,6 +28,8 @@ export const ResidentPublicSchema = z.object({
   nro_apto: z.string().nullable(),
   fase: z.string().nullable(),
   gerencia: z.string().nullable(),
+  supervisor_nombre: z.string().nullable(),
+  supervisor_tlf: z.string().nullable(),
 });
 
 export type ResidentPublic = z.infer<typeof ResidentPublicSchema>;
@@ -35,7 +37,7 @@ export type ResidentPublic = z.infer<typeof ResidentPublicSchema>;
 // Fields that the lookup endpoint selects from the DB
 // Explicitly excludes: email_propietario, tlf_propietario, ci_propietario, nombre_propietario, fecha_inicio_contrato
 export const RESIDENT_PUBLIC_FIELDS =
-  "id, ci_usuario, nombre_usuario, tlf_usuario, status, descripcion_inmueble, nro_apto, fase, gerencia" as const;
+  "id, ci_usuario, nombre_usuario, tlf_usuario, status, descripcion_inmueble, nro_apto, fase, gerencia, supervisor_nombre, supervisor_tlf" as const;
 
 // --- API Error Response ---
 

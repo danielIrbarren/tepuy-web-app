@@ -71,6 +71,8 @@ export async function PATCH(
     if ("email_propietario" in data)    updates.email_propietario = data.email_propietario || null;
     if ("tlf_propietario" in data)      updates.tlf_propietario = data.tlf_propietario || null;
     if ("fecha_inicio_contrato" in data) updates.fecha_inicio_contrato = data.fecha_inicio_contrato || null;
+    if ("supervisor_nombre" in data)    updates.supervisor_nombre = data.supervisor_nombre || null;
+    if ("supervisor_tlf" in data)       updates.supervisor_tlf = data.supervisor_tlf || null;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json<AdminErrorResponse>(

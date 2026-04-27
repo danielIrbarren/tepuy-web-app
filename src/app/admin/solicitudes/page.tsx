@@ -18,10 +18,10 @@ interface Solicitud {
   nro_apto: string | null;
   tlf_usuario: string | null;
   gerencia: string | null;
+  supervisor_nombre: string | null;
+  supervisor_tlf: string | null;
   work_area: string;
   description: string;
-  preferred_time: string | null;
-  access_notes: string | null;
   request_status: RequestStatus;
   admin_notes: string | null;
   webhook_status: WebhookStatus;
@@ -274,9 +274,9 @@ function SolicitudModal({
           >
             <DetailRow label="Área de trabajo" value={WORK_AREA_LABELS[solicitud.work_area as keyof typeof WORK_AREA_LABELS] ?? solicitud.work_area} />
             <DetailRow label="Descripción" value={solicitud.description} />
-            <DetailRow label="Horario preferido" value={solicitud.preferred_time} />
-            <DetailRow label="Notas de acceso" value={solicitud.access_notes} />
             <DetailRow label="Teléfono" value={solicitud.tlf_usuario} />
+            <DetailRow label="Supervisor" value={solicitud.supervisor_nombre} />
+            <DetailRow label="Teléfono del supervisor" value={solicitud.supervisor_tlf} />
             <DetailRow label="Fecha de solicitud" value={formatDate(solicitud.created_at)} />
             {solicitud.external_reference && (
               <DetailRow label="Referencia externa" value={solicitud.external_reference} />

@@ -142,6 +142,8 @@ export async function POST(request: NextRequest) {
       email_propietario,
       tlf_propietario,
       fecha_inicio_contrato,
+      supervisor_nombre,
+      supervisor_tlf,
     } = parsed.data;
 
     // 3. Insertar — la constraint UNIQUE en ci_usuario dará error 23505 si ya existe
@@ -160,6 +162,8 @@ export async function POST(request: NextRequest) {
         email_propietario: email_propietario || null,
         tlf_propietario: tlf_propietario || null,
         fecha_inicio_contrato: fecha_inicio_contrato || null,
+        supervisor_nombre: supervisor_nombre || null,
+        supervisor_tlf: supervisor_tlf || null,
         status: "active",
       })
       .select(RESIDENT_ADMIN_FIELDS)

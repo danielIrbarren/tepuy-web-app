@@ -51,25 +51,6 @@ const WORK_AREA_ICONS: Record<string, React.ReactNode> = {
   otro:               <ClipboardList size={18} strokeWidth={1.6} />,
 };
 
-// Predefined schedule options
-const SCHEDULE_PRESETS = [
-  "Mañana (8am – 12pm)",
-  "Tarde (12pm – 6pm)",
-  "Todo el día",
-  "Fin de semana",
-  "Flexible",
-];
-
-// Predefined access note presets
-const ACCESS_PRESETS = [
-  "Tocar el timbre",
-  "Avisar en conserjería",
-  "Dejar nota en la puerta",
-  "Llamar antes de llegar",
-  "Acceso con seguridad",
-  "Acceso libre",
-];
-
 interface MaintenanceFormProps {
   resident: ResidentPublic;
   onSuccess: (response: CreateSolicitudResponse) => void;
@@ -84,26 +65,16 @@ export function MaintenanceForm({
   const [workArea,         setWorkArea]         = useState<string>("");
   const [criticality,      setCriticality]      = useState<string>("");
   const [description,      setDescription]      = useState("");
-  const [preferredTime,    setPreferredTime]     = useState("");
-  const [selectedPresets,  setSelectedPresets]  = useState<string[]>([]);
-  const [customNote,       setCustomNote]       = useState("");
   const [isSubmitting,     setIsSubmitting]     = useState(false);
   const [error,            setError]            = useState<string | null>(null);
 
   const descriptionLength = description.length;
 
-  // Combine presets + custom note into a single access notes string
-  const accessNotes = [
-    ...selectedPresets,
-    customNote.trim(),
-  ].filter(Boolean).join(". ");
-
   const isValid =
     workArea !== "" &&
     criticality !== "" &&
     description.trim().length >= 10 &&
-    descriptionLength <= 1000 &&
-    accessNotes.length <= 300;
+    descriptionLength <= 1000;
 
   const filledCount = [
     workArea !== "",
@@ -111,12 +82,6 @@ export function MaintenanceForm({
     description.trim().length >= 10,
   ].filter(Boolean).length;
   const formProgress = (filledCount / 3) * 100;
-
-  const togglePreset = (preset: string) => {
-    setSelectedPresets((prev) =>
-      prev.includes(preset) ? prev.filter((p) => p !== preset) : [...prev, preset]
-    );
-  };
 
   const handleSubmit = async () => {
     if (!isValid || isSubmitting) return;
@@ -132,8 +97,6 @@ export function MaintenanceForm({
           work_area:      workArea,
           criticality,
           description:    description.trim(),
-          preferred_time: preferredTime || undefined,
-          access_notes:   accessNotes || undefined,
         }),
       });
 
@@ -374,113 +337,6 @@ export function MaintenanceForm({
           )}
         </div>
 
-        {/* ─── Optional fields ─── */}
-        <div className="border-t border-tepuy-100 pt-5 space-y-5">
-          <p className="text-[10px] font-bold text-tepuy-300 uppercase tracking-widest">
-            Información adicional (opcional)
-          </p>
-
-          {/* Horario preferido — Chips + input libre */}
-          <div className="space-y-2">
-            <label className={fieldLabel}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-              </svg>
-              Horario preferido
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {SCHEDULE_PRESETS.map((preset) => {
-                const isActive = preferredTime === preset;
-                return (
-                  <button
-                    key={preset}
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={() => setPreferredTime(isActive ? "" : preset)}
-                    className={`
-                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold
-                      border transition-all duration-150 cursor-pointer
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                      ${isActive
-                        ? "bg-tepuy-500 border-tepuy-500 text-white shadow-sm"
-                        : "bg-white border-tepuy-200 text-tepuy-600 hover:border-tepuy-400 hover:bg-tepuy-50"
-                      }
-                    `}
-                  >
-                    {isActive && (
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
-                    )}
-                    {preset}
-                  </button>
-                );
-              })}
-            </div>
-            <input
-              id="preferred-time"
-              type="text"
-              placeholder="O escribe un horario personalizado..."
-              value={SCHEDULE_PRESETS.includes(preferredTime) ? "" : preferredTime}
-              onChange={(e) => setPreferredTime(e.target.value)}
-              disabled={isSubmitting}
-              className="w-full h-10 rounded-xl border border-tepuy-200 bg-white px-3.5 text-[13px] text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all duration-150 focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 disabled:opacity-50"
-            />
-          </div>
-
-          {/* Notas de acceso — Preset chips */}
-          <div className="space-y-2">
-            <label className={fieldLabel}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              Notas de acceso
-            </label>
-
-            {/* Preset chips */}
-            <div className="flex flex-wrap gap-2">
-              {ACCESS_PRESETS.map((preset) => {
-                const isActive = selectedPresets.includes(preset);
-                return (
-                  <button
-                    key={preset}
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={() => togglePreset(preset)}
-                    className={`
-                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold
-                      border transition-all duration-150 cursor-pointer
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                      ${isActive
-                        ? "bg-tepuy-500 border-tepuy-500 text-white shadow-sm"
-                        : "bg-white border-tepuy-200 text-tepuy-600 hover:border-tepuy-400 hover:bg-tepuy-50"
-                      }
-                    `}
-                  >
-                    {isActive && (
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
-                    )}
-                    {preset}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Optional custom note */}
-            <input
-              type="text"
-              placeholder="Otra indicación de acceso (opcional)..."
-              value={customNote}
-              onChange={(e) => setCustomNote(e.target.value)}
-              disabled={isSubmitting}
-              maxLength={200}
-              className="w-full h-10 rounded-xl border border-tepuy-200 bg-white px-3.5 text-[13px] text-tepuy-900 placeholder:text-tepuy-300 outline-none transition-all duration-150 focus:border-tepuy-500 focus:ring-2 focus:ring-tepuy-500/12 disabled:opacity-50"
-            />
-          </div>
-        </div>
       </div>
 
       {/* Error */}

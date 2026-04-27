@@ -57,16 +57,6 @@ export const CreateSolicitudBodySchema = z.object({
     .string()
     .min(10, "La descripción debe tener al menos 10 caracteres")
     .max(1000, "La descripción no puede exceder 1000 caracteres"),
-  preferred_time: z
-    .string()
-    .max(100, "El horario no puede exceder 100 caracteres")
-    .optional()
-    .or(z.literal("")),
-  access_notes: z
-    .string()
-    .max(300, "Las notas de acceso no pueden exceder 300 caracteres")
-    .optional()
-    .or(z.literal("")),
 });
 
 export type CreateSolicitudBody = z.infer<typeof CreateSolicitudBodySchema>;

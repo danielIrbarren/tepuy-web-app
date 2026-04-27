@@ -221,6 +221,7 @@ export default function AdminPage() {
                     <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Nombre</th>
                     <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden sm:table-cell">Inmueble</th>
                     <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden md:table-cell">Apto</th>
+                    <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden lg:table-cell">Supervisor</th>
                     <th className="text-center px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Estado</th>
                     <th className="text-right px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Acciones</th>
                   </tr>
@@ -228,7 +229,7 @@ export default function AdminPage() {
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-12 text-center">
+                      <td colSpan={7} className="px-4 py-12 text-center">
                         <div className="flex items-center justify-center gap-2 text-tepuy-400">
                           <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -240,7 +241,7 @@ export default function AdminPage() {
                     </tr>
                   ) : residents.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-12 text-center text-tepuy-400">
+                      <td colSpan={7} className="px-4 py-12 text-center text-tepuy-400">
                         {debouncedSearch || debouncedResidencia || statusFilter
                           ? "No se encontraron residentes con esos filtros."
                           : "No hay residentes registrados."}
@@ -253,6 +254,18 @@ export default function AdminPage() {
                         <td className="px-2 sm:px-4 py-3 text-tepuy-700 text-xs sm:text-sm">{r.nombre_usuario || "—"}</td>
                         <td className="px-2 sm:px-4 py-3 text-tepuy-600 hidden sm:table-cell">{r.descripcion_inmueble || "—"}</td>
                         <td className="px-2 sm:px-4 py-3 text-tepuy-600 hidden md:table-cell">{r.nro_apto || "—"}</td>
+                        <td className="px-2 sm:px-4 py-3 text-tepuy-600 hidden lg:table-cell">
+                          {r.supervisor_nombre ? (
+                            <div className="flex flex-col leading-tight">
+                              <span className="text-tepuy-700 text-[13px]">{r.supervisor_nombre}</span>
+                              {r.supervisor_tlf && (
+                                <span className="text-tepuy-400 text-[11px] font-mono">{r.supervisor_tlf}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-tepuy-300">—</span>
+                          )}
+                        </td>
                         <td className="px-2 sm:px-4 py-3 text-center">
                           <button
                             onClick={() => setTogglingResident(r)}

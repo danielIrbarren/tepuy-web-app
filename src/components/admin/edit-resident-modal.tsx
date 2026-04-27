@@ -24,6 +24,8 @@ export function EditResidentModal({ resident, onClose, onUpdated, onError }: Edi
     email_propietario: resident.email_propietario ?? "",
     tlf_propietario: resident.tlf_propietario ?? "",
     fecha_inicio_contrato: resident.fecha_inicio_contrato ?? "",
+    supervisor_nombre: resident.supervisor_nombre ?? "",
+    supervisor_tlf: resident.supervisor_tlf ?? "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
@@ -237,6 +239,34 @@ export function EditResidentModal({ resident, onClose, onUpdated, onError }: Edi
                 onChange={(e) => updateField("fecha_inicio_contrato", e.target.value)}
                 className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
               />
+            </div>
+          </fieldset>
+
+          {/* Supervisor asignado */}
+          <fieldset className="space-y-3">
+            <legend className="text-xs font-bold text-tepuy-500 uppercase tracking-wider">Supervisor asignado</legend>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Nombre</label>
+                <input
+                  type="text"
+                  placeholder="Nombre del supervisor"
+                  value={form.supervisor_nombre}
+                  onChange={(e) => updateField("supervisor_nombre", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Teléfono</label>
+                <input
+                  type="text"
+                  placeholder="+58 412 1234567"
+                  value={form.supervisor_tlf}
+                  onChange={(e) => updateField("supervisor_tlf", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
             </div>
           </fieldset>
 

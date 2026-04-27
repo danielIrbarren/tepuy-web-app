@@ -24,12 +24,13 @@ export interface MakeWebhookPayload {
   descripcion_inmueble: string | null;
   tlf_usuario: string | null;
   gerencia: string | null;
+  // Supervisor asignado al residente al momento del submit
+  supervisor_nombre: string | null;
+  supervisor_tlf: string | null;
   // Datos de la solicitud
   work_area: string;
   criticality: "urgente" | "importante";
   description: string;
-  preferred_time: string | null;
-  access_notes: string | null;
   // Metadatos
   created_at: string;
 }
@@ -114,6 +115,7 @@ export async function triggerMakeWebhook(
     const normalizedPayload: MakeWebhookPayload = {
       ...payload,
       tlf_usuario: normalizeVenezuelanPhone(payload.tlf_usuario),
+      supervisor_tlf: normalizeVenezuelanPhone(payload.supervisor_tlf),
     };
 
     const response = await fetch(webhookUrl, {

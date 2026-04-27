@@ -23,7 +23,7 @@ const ListSolicitudesQuerySchema = z.object({
 });
 
 export const SOLICITUD_ADMIN_FIELDS =
-  "id, resident_id, ci_usuario, nombre_usuario, descripcion_inmueble, nro_apto, tlf_usuario, gerencia, work_area, description, preferred_time, access_notes, request_status, admin_notes, webhook_status, external_reference, created_at, updated_at" as const;
+  "id, resident_id, ci_usuario, nombre_usuario, descripcion_inmueble, nro_apto, tlf_usuario, gerencia, supervisor_nombre, supervisor_tlf, work_area, description, request_status, admin_notes, webhook_status, external_reference, created_at, updated_at" as const;
 
 export async function GET(request: NextRequest) {
   const authError = await requireAdmin(request);
