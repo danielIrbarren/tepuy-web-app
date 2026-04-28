@@ -1,6 +1,6 @@
 "use client";
 
-import type { CreateSolicitudResponse } from "@/lib/schemas/solicitud";
+import { getReferenceNumber, type CreateSolicitudResponse } from "@/lib/schemas/solicitud";
 
 interface SuccessScreenProps {
   response: CreateSolicitudResponse;
@@ -8,7 +8,7 @@ interface SuccessScreenProps {
 }
 
 export function SuccessScreen({ response, onNewRequest }: SuccessScreenProps) {
-  const shortId = response.request_id.slice(-8).toUpperCase();
+  const shortId = getReferenceNumber(response.request_id);
 
   return (
     <div className="space-y-6 text-center stagger-children">

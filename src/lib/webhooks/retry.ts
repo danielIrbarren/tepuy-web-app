@@ -15,6 +15,7 @@
 
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { triggerMakeWebhook, type MakeWebhookPayload } from "@/lib/webhooks/make";
+import { getReferenceNumber } from "@/lib/schemas/solicitud";
 import { log } from "@/lib/logger";
 
 // ─── Backoff según retry_count ────────────────────────────────────────────
@@ -101,6 +102,7 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
 
       const payload: MakeWebhookPayload = {
         request_id: req.id as string,
+        reference_number: getReferenceNumber(req.id as string),
         ci_usuario: req.ci_usuario as string,
         nombre_usuario: req.nombre_usuario as string | null,
         nro_apto: req.nro_apto as string | null,

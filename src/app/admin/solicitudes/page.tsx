@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AdminApiError, fetchAdminJson } from "@/lib/adminClient";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { WORK_AREA_LABELS } from "@/lib/schemas/solicitud";
+import { WORK_AREA_LABELS, getReferenceNumber } from "@/lib/schemas/solicitud";
 
 type RequestStatus = "pendiente" | "en_proceso" | "completado" | "cancelado";
 type WebhookStatus = "pending" | "sent" | "failed";
@@ -272,6 +272,7 @@ function SolicitudModal({
             className="rounded-xl px-4 py-1"
             style={{ background: "oklch(0.978 0.004 200)", border: "1px solid oklch(0.92 0.020 265)" }}
           >
+            <DetailRow label="Referencia" value={getReferenceNumber(solicitud.id)} />
             <DetailRow label="Área de trabajo" value={WORK_AREA_LABELS[solicitud.work_area as keyof typeof WORK_AREA_LABELS] ?? solicitud.work_area} />
             <DetailRow label="Descripción" value={solicitud.description} />
             <DetailRow label="Teléfono" value={solicitud.tlf_usuario} />
@@ -524,6 +525,7 @@ export default function AdminSolicitudesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "oklch(0.978 0.004 200)", borderBottom: "1px solid oklch(0.92 0.020 265)" }}>
+                    <th className="text-left px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Ref</th>
                     <th className="text-left px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">Fecha</th>
                     <th className="text-left px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest">CI</th>
                     <th className="text-left px-2 sm:px-4 py-3 text-[10px] font-bold text-tepuy-400 uppercase tracking-widest hidden sm:table-cell">Nombre</th>
@@ -536,7 +538,7 @@ export default function AdminSolicitudesPage() {
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-14 text-center">
+                      <td colSpan={8} className="px-4 py-14 text-center">
                         <div className="flex items-center justify-center gap-2 text-tepuy-400">
                           <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -548,7 +550,7 @@ export default function AdminSolicitudesPage() {
                     </tr>
                   ) : solicitudes.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-14 text-center text-[13px] text-tepuy-400">
+                      <td colSpan={8} className="px-4 py-14 text-center text-[13px] text-tepuy-400">
                         {hasFilters
                           ? "No se encontraron solicitudes con esos filtros."
                           : "No hay solicitudes registradas."}
@@ -560,6 +562,9 @@ export default function AdminSolicitudesPage() {
                         key={s.id}
                         className="border-b border-tepuy-50 hover:bg-tepuy-50/40 transition-colors"
                       >
+                        <td className="px-2 sm:px-4 py-2.5 font-mono font-bold text-tepuy-700 text-[11px] sm:text-[12px] whitespace-nowrap">
+                          {getReferenceNumber(s.id)}
+                        </td>
                         <td className="px-2 sm:px-4 py-2.5 text-tepuy-400 text-[11px] sm:text-[12px] whitespace-nowrap font-medium">
                           {formatDate(s.created_at)}
                         </td>

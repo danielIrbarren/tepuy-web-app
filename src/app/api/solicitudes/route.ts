@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import { RESIDENT_PUBLIC_FIELDS } from "@/lib/schemas/resident";
 import {
   CreateSolicitudBodySchema,
+  getReferenceNumber,
   type CreateSolicitudResponse,
   type SolicitudErrorResponse,
 } from "@/lib/schemas/solicitud";
@@ -163,6 +164,7 @@ export async function POST(request: NextRequest) {
       try {
         const webhookResult = await triggerMakeWebhook({
           request_id: insertedRequest.id,
+          reference_number: getReferenceNumber(insertedRequest.id),
           ci_usuario: resident.ci_usuario,
           nombre_usuario: resident.nombre_usuario,
           nro_apto: resident.nro_apto,

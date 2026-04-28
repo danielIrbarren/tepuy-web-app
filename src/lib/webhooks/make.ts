@@ -17,6 +17,9 @@
 
 export interface MakeWebhookPayload {
   request_id: string;
+  // Código corto user-visible (últimos 8 chars del UUID en mayúsculas) — el mismo
+  // que el residente ve en la pantalla de confirmación.
+  reference_number: string;
   // Datos del residente (desnormalizados en el momento del submit)
   ci_usuario: string;
   nombre_usuario: string | null;

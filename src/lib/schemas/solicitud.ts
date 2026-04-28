@@ -47,6 +47,14 @@ export const WORK_AREA_LABELS: Record<WorkArea, string> = {
   otro: "Otro",
 };
 
+// --- Reference number (user-visible short code derived from UUID) ---
+// Last 8 chars of the request UUID, uppercased.
+// Used by SuccessScreen, the Make.com webhook payload, and any retry attempt —
+// always identical so the user, ClickUp/Airtable, and admin all see the same code.
+export function getReferenceNumber(requestId: string): string {
+  return requestId.slice(-8).toUpperCase();
+}
+
 // --- Create Solicitud Body (what the frontend sends) ---
 
 export const CreateSolicitudBodySchema = z.object({
