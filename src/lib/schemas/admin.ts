@@ -100,6 +100,10 @@ export const CreateResidentSchema = z.object({
     .optional()
     .or(z.literal("")),
 
+  // Datos de contacto del residente (correos del trabajador)
+  email_personal: EmailSchema,
+  email_institucional: EmailSchema,
+
   // Datos del supervisor asignado (interno — se envía a Make.com en cada solicitud)
   supervisor_nombre: z
     .string()
@@ -107,6 +111,7 @@ export const CreateResidentSchema = z.object({
     .optional()
     .or(z.literal("")),
   supervisor_tlf: PhoneSchema,
+  supervisor_email: EmailSchema,
 });
 
 export type CreateResidentBody = z.infer<typeof CreateResidentSchema>;
@@ -156,8 +161,11 @@ export const ResidentAdminSchema = z.object({
   email_propietario: z.string().nullable(),
   tlf_propietario: z.string().nullable(),
   fecha_inicio_contrato: z.string().nullable(),
+  email_personal: z.string().nullable(),
+  email_institucional: z.string().nullable(),
   supervisor_nombre: z.string().nullable(),
   supervisor_tlf: z.string().nullable(),
+  supervisor_email: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -166,7 +174,7 @@ export type ResidentAdmin = z.infer<typeof ResidentAdminSchema>;
 
 // Campos que el admin SELECT —  todos, incluyendo datos privados del propietario
 export const RESIDENT_ADMIN_FIELDS =
-  "id, ci_usuario, nombre_usuario, tlf_usuario, status, descripcion_inmueble, nro_apto, fase, gerencia, nombre_propietario, ci_propietario, email_propietario, tlf_propietario, fecha_inicio_contrato, supervisor_nombre, supervisor_tlf, created_at, updated_at" as const;
+  "id, ci_usuario, nombre_usuario, tlf_usuario, status, descripcion_inmueble, nro_apto, fase, gerencia, nombre_propietario, ci_propietario, email_propietario, tlf_propietario, fecha_inicio_contrato, email_personal, email_institucional, supervisor_nombre, supervisor_tlf, supervisor_email, created_at, updated_at" as const;
 
 // ─── Listado paginado (G-03: GET /api/admin/residentes) ──────────────────
 

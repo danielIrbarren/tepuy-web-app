@@ -84,6 +84,11 @@ model Resident {
   emailPropietario      String?   @map("email_propietario") @db.VarChar(255)
   tlfPropietario        String?   @map("tlf_propietario") @db.VarChar(50)
   fechaInicioContrato   DateTime? @map("fecha_inicio_contrato") @db.Date
+  emailPersonal         String?   @map("email_personal") @db.VarChar(255)
+  emailInstitucional    String?   @map("email_institucional") @db.VarChar(255)
+  supervisorNombre      String?   @map("supervisor_nombre") @db.VarChar(255)
+  supervisorTlf         String?   @map("supervisor_tlf") @db.VarChar(50)
+  supervisorEmail       String?   @map("supervisor_email") @db.VarChar(255)
   createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
 
@@ -126,6 +131,9 @@ model MaintenanceRequest {
   // Admin
   requestStatus         RequestStatusType @default(pendiente) @map("request_status")
   adminNotes            String?   @map("admin_notes") @db.Text
+  // Supervisor snapshot (denormalizado al momento de la solicitud)
+  supervisorNombre      String?   @map("supervisor_nombre") @db.VarChar(255)
+  supervisorTlf         String?   @map("supervisor_tlf") @db.VarChar(50)
 
   resident              Resident  @relation(fields: [residentId], references: [id], onDelete: Restrict)
 

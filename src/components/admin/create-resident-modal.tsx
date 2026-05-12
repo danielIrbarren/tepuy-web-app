@@ -14,6 +14,8 @@ const EMPTY_FORM = {
   ci_usuario: "",
   nombre_usuario: "",
   tlf_usuario: "",
+  email_personal: "",
+  email_institucional: "",
   descripcion_inmueble: "",
   nro_apto: "",
   fase: "",
@@ -25,6 +27,7 @@ const EMPTY_FORM = {
   fecha_inicio_contrato: "",
   supervisor_nombre: "",
   supervisor_tlf: "",
+  supervisor_email: "",
 };
 
 export function CreateResidentModal({ onClose, onCreated, onError }: CreateResidentModalProps) {
@@ -130,6 +133,29 @@ export function CreateResidentModal({ onClose, onCreated, onError }: CreateResid
                 onChange={(e) => updateField("tlf_usuario", e.target.value)}
                 className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Correo personal</label>
+                <input
+                  type="email"
+                  placeholder="correo@gmail.com"
+                  value={form.email_personal}
+                  onChange={(e) => updateField("email_personal", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Correo institucional</label>
+                <input
+                  type="email"
+                  placeholder="usuario@pdvsa.com.ve"
+                  value={form.email_institucional}
+                  onChange={(e) => updateField("email_institucional", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
             </div>
           </fieldset>
 
@@ -268,6 +294,17 @@ export function CreateResidentModal({ onClose, onCreated, onError }: CreateResid
                   className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
                 />
               </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-tepuy-700">Correo</label>
+              <input
+                type="email"
+                placeholder="supervisor@pdvsa.com.ve"
+                value={form.supervisor_email}
+                onChange={(e) => updateField("supervisor_email", e.target.value)}
+                className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+              />
             </div>
           </fieldset>
 

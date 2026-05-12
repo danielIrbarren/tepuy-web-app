@@ -15,6 +15,8 @@ export function EditResidentModal({ resident, onClose, onUpdated, onError }: Edi
   const [form, setForm] = useState({
     nombre_usuario: resident.nombre_usuario ?? "",
     tlf_usuario: resident.tlf_usuario ?? "",
+    email_personal: resident.email_personal ?? "",
+    email_institucional: resident.email_institucional ?? "",
     descripcion_inmueble: resident.descripcion_inmueble ?? "",
     nro_apto: resident.nro_apto ?? "",
     fase: resident.fase ?? "",
@@ -26,6 +28,7 @@ export function EditResidentModal({ resident, onClose, onUpdated, onError }: Edi
     fecha_inicio_contrato: resident.fecha_inicio_contrato ?? "",
     supervisor_nombre: resident.supervisor_nombre ?? "",
     supervisor_tlf: resident.supervisor_tlf ?? "",
+    supervisor_email: resident.supervisor_email ?? "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
@@ -129,6 +132,29 @@ export function EditResidentModal({ resident, onClose, onUpdated, onError }: Edi
                 onChange={(e) => updateField("tlf_usuario", e.target.value)}
                 className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Correo personal</label>
+                <input
+                  type="email"
+                  placeholder="correo@gmail.com"
+                  value={form.email_personal}
+                  onChange={(e) => updateField("email_personal", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-tepuy-700">Correo institucional</label>
+                <input
+                  type="email"
+                  placeholder="usuario@pdvsa.com.ve"
+                  value={form.email_institucional}
+                  onChange={(e) => updateField("email_institucional", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+                />
+              </div>
             </div>
           </fieldset>
 
@@ -267,6 +293,17 @@ export function EditResidentModal({ resident, onClose, onUpdated, onError }: Edi
                   className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
                 />
               </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-tepuy-700">Correo</label>
+              <input
+                type="email"
+                placeholder="supervisor@pdvsa.com.ve"
+                value={form.supervisor_email}
+                onChange={(e) => updateField("supervisor_email", e.target.value)}
+                className="w-full h-9 px-3 rounded-lg border border-tepuy-200 text-sm outline-none focus:border-tepuy-400 focus:ring-2 focus:ring-tepuy-400/15"
+              />
             </div>
           </fieldset>
 
