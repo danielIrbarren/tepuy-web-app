@@ -37,6 +37,7 @@ export default function AdminPage() {
 
   // Toast
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Debounce search + residencia
   useEffect(() => {
@@ -122,6 +123,38 @@ export default function AdminPage() {
     setTotal((prev) => prev - 1);
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (debouncedSearch)     params.set("search", debouncedSearch);
+      if (debouncedResidencia) params.set("residencia", debouncedResidencia);
+      if (statusFilter)        params.set("status", statusFilter);
+
+      const res = await fetch(`/api/admin/residentes/export?${params.toString()}`, {
+        credentials: "include",
+        headers: { Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) router.replace("/admin/login");
+        throw new Error("Export failed");
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `residentes-${new Date().toISOString().split("T")[0]}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      showToast("Error al exportar residentes.", "error");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <main className="flex-1 flex flex-col min-h-0">
       <AdminPageHeader title="Residentes" count={isLoading ? undefined : total} section="residents" />
@@ -193,6 +226,27 @@ export default function AdminPage() {
               <option value="active">Activos</option>
               <option value="inactive">Inactivos</option>
             </select>
+
+            {/* Export button */}
+            <button
+              onClick={handleExport}
+              disabled={isExporting}
+              className="h-10 px-4 rounded-xl border border-tepuy-200 text-sm font-semibold text-tepuy-700 hover:bg-tepuy-50 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap w-full sm:w-auto transition-colors"
+            >
+              {isExporting ? (
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              )}
+              {isExporting ? "Exportando..." : "Exportar Excel"}
+            </button>
 
             {/* Create button */}
             <button
