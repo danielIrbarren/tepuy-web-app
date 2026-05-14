@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { ResidentAdmin, ListResidentsResponse } from "@/lib/schemas/admin";
-import { AdminApiError, fetchAdminJson } from "@/lib/adminClient";
+import { AdminApiError, fetchAdmin, fetchAdminJson } from "@/lib/adminClient";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { CreateResidentModal } from "@/components/admin/create-resident-modal";
 import { EditResidentModal } from "@/components/admin/edit-resident-modal";
@@ -38,6 +38,16 @@ export default function AdminPage() {
   // Toast
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkActing, setIsBulkActing] = useState(false);
+  const selectAllRef = useRef<HTMLInputElement>(null);
+
+  // Clear selection on page/filter changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [page, debouncedSearch, debouncedResidencia, statusFilter]);
 
   // Debounce search + residencia
   useEffect(() => {
@@ -123,6 +133,82 @@ export default function AdminPage() {
     setTotal((prev) => prev - 1);
   };
 
+  // Derived selection state
+  const allOnPageSelected = residents.length > 0 && residents.every((r) => selectedIds.has(r.id));
+  const someOnPageSelected = residents.some((r) => selectedIds.has(r.id));
+
+  // Sync indeterminate state on header checkbox
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = someOnPageSelected && !allOnPageSelected;
+    }
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (allOnPageSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(residents.map((r) => r.id)));
+    }
+  };
+
+  const handleBulkStatus = async (status: "active" | "inactive") => {
+    setIsBulkActing(true);
+    const ids = Array.from(selectedIds);
+    try {
+      await Promise.all(
+        ids.map((id) =>
+          fetchAdminJson(
+            `/api/admin/residentes/${id}/status`,
+            { method: "PATCH", body: JSON.stringify({ status }), headers: { "Content-Type": "application/json" } },
+            { fallbackMessage: "Error al cambiar estado.", onUnauthorized: () => router.replace("/admin/login") }
+          )
+        )
+      );
+      const label = status === "active" ? "activados" : "desactivados";
+      showToast(`${ids.length} residente${ids.length !== 1 ? "s" : ""} ${label}.`, "success");
+      setSelectedIds(new Set());
+      fetchResidents();
+    } catch {
+      showToast("Error al cambiar el estado.", "error");
+    } finally {
+      setIsBulkActing(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    if (!window.confirm(`¿Eliminar ${ids.length} residente${ids.length !== 1 ? "s" : ""} seleccionado${ids.length !== 1 ? "s" : ""}? Esta acción no se puede deshacer.`)) return;
+    setIsBulkActing(true);
+    try {
+      await Promise.all(
+        ids.map((id) =>
+          fetchAdmin(
+            `/api/admin/residentes/${id}`,
+            { method: "DELETE" },
+            { fallbackMessage: "Error al eliminar.", onUnauthorized: () => router.replace("/admin/login") }
+          )
+        )
+      );
+      showToast(`${ids.length} residente${ids.length !== 1 ? "s" : ""} eliminados.`, "success");
+      setSelectedIds(new Set());
+      fetchResidents();
+    } catch {
+      showToast("Error al eliminar.", "error");
+    } finally {
+      setIsBulkActing(false);
+    }
+  };
+
   const handleExport = async () => {
     setIsExporting(true);
     try {
@@ -162,6 +248,42 @@ export default function AdminPage() {
       {/* Controls */}
       <div className="px-4 py-4">
         <div className="max-w-6xl mx-auto space-y-3">
+          {/* Bulk action bar */}
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-2 flex-wrap px-1">
+              <span className="text-xs font-semibold text-tepuy-600">
+                {selectedIds.size} seleccionado{selectedIds.size !== 1 ? "s" : ""}
+              </span>
+              <button
+                onClick={() => handleBulkStatus("active")}
+                disabled={isBulkActing}
+                className="h-8 px-3 rounded-lg border border-emerald-200 text-xs font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+              >
+                Activar
+              </button>
+              <button
+                onClick={() => handleBulkStatus("inactive")}
+                disabled={isBulkActing}
+                className="h-8 px-3 rounded-lg border border-amber-200 text-xs font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+              >
+                Desactivar
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulkActing}
+                className="h-8 px-3 rounded-lg border border-red-200 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+              >
+                Eliminar
+              </button>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="h-8 px-3 rounded-lg text-xs font-medium text-tepuy-400 hover:text-tepuy-600 hover:bg-tepuy-50 cursor-pointer transition-colors"
+              >
+                Deseleccionar todo
+              </button>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search */}
             <div className="relative flex-1">
@@ -271,6 +393,16 @@ export default function AdminPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-tepuy-100">
+                    <th className="w-10 px-2 sm:px-3 py-3">
+                      <input
+                        ref={selectAllRef}
+                        type="checkbox"
+                        checked={allOnPageSelected}
+                        onChange={toggleSelectAll}
+                        disabled={isLoading || residents.length === 0}
+                        className="h-4 w-4 rounded border-tepuy-300 text-tepuy-600 cursor-pointer disabled:cursor-not-allowed"
+                      />
+                    </th>
                     <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">CI</th>
                     <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider">Nombre</th>
                     <th className="text-left px-2 sm:px-4 py-3 text-xs font-semibold text-tepuy-500 uppercase tracking-wider hidden sm:table-cell">Inmueble</th>
@@ -283,7 +415,7 @@ export default function AdminPage() {
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-12 text-center">
+                      <td colSpan={8} className="px-4 py-12 text-center">
                         <div className="flex items-center justify-center gap-2 text-tepuy-400">
                           <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -295,7 +427,7 @@ export default function AdminPage() {
                     </tr>
                   ) : residents.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-12 text-center text-tepuy-400">
+                      <td colSpan={8} className="px-4 py-12 text-center text-tepuy-400">
                         {debouncedSearch || debouncedResidencia || statusFilter
                           ? "No se encontraron residentes con esos filtros."
                           : "No hay residentes registrados."}
@@ -303,7 +435,15 @@ export default function AdminPage() {
                     </tr>
                   ) : (
                     residents.map((r) => (
-                      <tr key={r.id} className="border-b border-tepuy-50 hover:bg-tepuy-50/50 transition-colors">
+                      <tr key={r.id} className={`border-b border-tepuy-50 hover:bg-tepuy-50/50 transition-colors ${selectedIds.has(r.id) ? "bg-tepuy-50/80" : ""}`}>
+                        <td className="w-10 px-2 sm:px-3 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(r.id)}
+                            onChange={() => toggleSelect(r.id)}
+                            className="h-4 w-4 rounded border-tepuy-300 text-tepuy-600 cursor-pointer"
+                          />
+                        </td>
                         <td className="px-2 sm:px-4 py-3 font-mono font-semibold text-tepuy-800 text-xs sm:text-sm">{r.ci_usuario}</td>
                         <td className="px-2 sm:px-4 py-3 text-tepuy-700 text-xs sm:text-sm">{r.nombre_usuario || "—"}</td>
                         <td className="px-2 sm:px-4 py-3 text-tepuy-600 hidden sm:table-cell">{r.descripcion_inmueble || "—"}</td>
