@@ -93,17 +93,17 @@ export function ResidentLookup({ onResidentFound }: ResidentLookupProps) {
           <Image
             src="/pdvsa-petroindependencia-logo.png"
             alt="PDVSA Petroindependencia"
-            width={200}
-            height={128}
+            width={400}
+            height={256}
             priority
-            className="h-auto w-auto max-h-20 object-contain"
+            className="h-auto w-auto max-h-40 object-contain"
           />
         </div>
 
         {/* Heading */}
         <div className="space-y-1.5">
           <h1 className="text-[22px] font-bold tracking-tight text-tepuy-900">
-            Portal de Mantenimiento
+            Portal de Mantenimiento Correctivo
           </h1>
           <p className="text-sm text-tepuy-500 leading-relaxed max-w-[260px] mx-auto">
             Ingrese su cédula para verificar su identidad como usuario de TEPUY.

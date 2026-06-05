@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sabra IFM — Portal de Mantenimiento TEPUY",
+  title: "Sabra IFM — Portal de Mantenimiento Correctivo",
   description:
-    "Portal público de solicitudes de mantenimiento para residentes de TEPUY. Gestionado por Sabra IFM.",
+    "Portal público de solicitudes de mantenimiento correctivo para residentes de TEPUY. Gestionado por Sabra IFM.",
 };
 
 export const viewport: Viewport = {
@@ -84,7 +84,7 @@ export default function RootLayout({
         {/* Footer */}
         <footer className="py-5 text-center border-t border-tepuy-100/60">
           <p className="text-[11px] text-tepuy-300 tracking-wide">
-            Sabra IFM &middot; TEPUY &middot; Portal de Mantenimiento &middot; {new Date().getFullYear()}
+            Sabra IFM &middot; TEPUY &middot; Portal de Mantenimiento Correctivo &middot; {new Date().getFullYear()}
           </p>
         </footer>
       </body>

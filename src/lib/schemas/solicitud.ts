@@ -24,7 +24,7 @@ export const WorkArea = z.enum([
   "albanileria",
   "impermeabilizacion",
   "vidrieria",
-  "limpieza",
+  "fumigacion",
   "jardineria",
   "otro",
 ]);
@@ -42,7 +42,7 @@ export const WORK_AREA_LABELS: Record<WorkArea, string> = {
   albanileria: "Albañilería",
   impermeabilizacion: "Impermeabilización",
   vidrieria: "Vidriería",
-  limpieza: "Limpieza",
+  fumigacion: "Fumigación",
   jardineria: "Jardinería",
   otro: "Otro",
 };

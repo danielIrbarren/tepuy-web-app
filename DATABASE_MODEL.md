@@ -37,7 +37,7 @@
 | `albanileria` | Albañilería |
 | `impermeabilizacion` | Impermeabilización |
 | `vidrieria` | Vidriería |
-| `limpieza` | Limpieza |
+| `fumigacion` | Fumigación |
 | `jardineria` | Jardinería |
 | `otro` | Otro |
 

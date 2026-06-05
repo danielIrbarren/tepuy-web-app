@@ -11,7 +11,7 @@ import {
   Layers,
   Droplets,
   LayoutGrid,
-  Sparkles,
+  SprayCan,
   ClipboardList,
   AlertTriangle,
   Clock,
@@ -47,7 +47,7 @@ const WORK_AREA_ICONS: Record<string, React.ReactNode> = {
   albanileria:        <Layers size={18} strokeWidth={1.6} />,
   impermeabilizacion: <Droplets size={18} strokeWidth={1.6} />,
   vidrieria:          <LayoutGrid size={18} strokeWidth={1.6} />,
-  limpieza:           <Sparkles size={18} strokeWidth={1.6} />,
+  fumigacion:         <SprayCan size={18} strokeWidth={1.6} />,
   otro:               <ClipboardList size={18} strokeWidth={1.6} />,
 };
 

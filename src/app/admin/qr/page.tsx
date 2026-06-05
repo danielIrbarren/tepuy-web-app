@@ -125,7 +125,7 @@ export default function AdminQRPage() {
       ctx.fillStyle = COLOR_TITLE;
       ctx.font =
         "bold 92px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
-      ctx.fillText("Portal de Mantenimiento TEPUY", CANVAS_W / 2, titleY);
+      ctx.fillText("Portal de Mantenimiento Correctivo", CANVAS_W / 2, titleY);
 
       const subtitleY = titleY + 84;
       ctx.fillStyle = COLOR_SUBTITLE;
@@ -239,7 +239,7 @@ export default function AdminQRPage() {
                 </div>
               </div>
               <h1 className="text-lg font-bold text-tepuy-900">
-                Portal de Mantenimiento TEPUY
+                Portal de Mantenimiento Correctivo
               </h1>
               <p className="text-sm text-muted-foreground">
                 Escanea el codigo QR para reportar una solicitud
