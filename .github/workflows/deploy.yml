@@ -73,10 +73,38 @@ jobs:
               body: '🚀 **Preview desplegado exitosamente!**\n\n🔗 URL: ${{ steps.deploy.outputs.preview_url }}'
             })
 
+  migrate-production:
+    name: Apply DB Migrations
+    runs-on: ubuntu-latest
+    needs: lint
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: opsywnwefweglnmziwdo
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+
+      # Aplica SOLO las migraciones en supabase/migrations/ que aún no están
+      # registradas en supabase_migrations.schema_migrations de producción.
+      # Es idempotente: las ya aplicadas se saltan. Si una migración falla,
+      # este job falla y deploy-production NO corre (ver needs:).
+      - name: Push migrations to production
+        run: supabase db push
+
   deploy-production:
     name: Deploy Production
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, migrate-production]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
