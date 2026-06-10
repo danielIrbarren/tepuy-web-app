@@ -74,6 +74,27 @@ function normalizeVenezuelanPhone(raw: string | null): string | null {
   return "+" + digits;
 }
 
+// ─── Normalización de saltos de línea para WhatsApp ──────────────────────
+
+/**
+ * Aplasta las líneas en blanco de la descripción antes de mandarla a Make/WhatsApp.
+ * WhatsApp no maneja bien los párrafos separados por líneas vacías, así que
+ * colapsamos cualquier secuencia de saltos en uno solo. Se conservan los saltos
+ * de línea simples (legibilidad); solo se eliminan los huecos.
+ *
+ *   "Hay una fuga.\n\n\nViene del techo." → "Hay una fuga.\nViene del techo."
+ *
+ * Nota: solo afecta la copia que va a Make. La descripción original queda
+ * intacta en la base de datos y en el panel admin.
+ */
+export function collapseBlankLines(text: string): string {
+  return text
+    .replace(/\r\n/g, "\n")     // normaliza saltos estilo Windows
+    .replace(/[ \t]+\n/g, "\n") // quita espacios al final de cada línea
+    .replace(/\n{2,}/g, "\n")   // colapsa líneas en blanco
+    .trim();
+}
+
 // ─── Función principal ───────────────────────────────────────────────────
 
 /**
@@ -119,6 +140,7 @@ export async function triggerMakeWebhook(
       ...payload,
       tlf_usuario: normalizeVenezuelanPhone(payload.tlf_usuario),
       supervisor_tlf: normalizeVenezuelanPhone(payload.supervisor_tlf),
+      description: collapseBlankLines(payload.description),
     };
 
     const response = await fetch(webhookUrl, {
