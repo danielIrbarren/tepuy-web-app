@@ -1,5 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { collapseBlankLines } from "./make";
+import { collapseBlankLines, buildMakePayload, type MakeRequestRow } from "./make";
+
+const baseRow: MakeRequestRow = {
+  id: "11111111-2222-3333-4444-555566667777",
+  ci_usuario: "V-12345678",
+  nombre_usuario: "Juan Pérez",
+  nro_apto: "3-B",
+  descripcion_inmueble: "Torre A",
+  tlf_usuario: "0424-6897123",
+  gerencia: "Mantenimiento",
+  supervisor_nombre: "Ana Gómez",
+  supervisor_tlf: "0212-5551234",
+  work_area: "fumigacion",
+  criticality: "urgente",
+  description: "Gran presencia de chiripas en la cocina",
+  image_urls: null,
+  created_at: "2026-06-10T17:46:00.000Z",
+};
 
 describe("collapseBlankLines", () => {
   it("colapsa líneas en blanco entre párrafos en un solo salto", () => {
@@ -32,5 +49,38 @@ describe("collapseBlankLines", () => {
     expect(collapseBlankLines("Texto normal sin saltos")).toBe(
       "Texto normal sin saltos"
     );
+  });
+});
+
+describe("buildMakePayload", () => {
+  it("mapea una fila al payload del webhook con reference_number derivado del id", () => {
+    const payload = buildMakePayload(baseRow);
+
+    expect(payload).toEqual({
+      request_id: "11111111-2222-3333-4444-555566667777",
+      reference_number: "55566667777".slice(-8).toUpperCase(),
+      ci_usuario: "V-12345678",
+      nombre_usuario: "Juan Pérez",
+      nro_apto: "3-B",
+      descripcion_inmueble: "Torre A",
+      tlf_usuario: "0424-6897123",
+      gerencia: "Mantenimiento",
+      supervisor_nombre: "Ana Gómez",
+      supervisor_tlf: "0212-5551234",
+      work_area: "fumigacion",
+      criticality: "urgente",
+      description: "Gran presencia de chiripas en la cocina",
+      image_urls: [],
+      created_at: "2026-06-10T17:46:00.000Z",
+    });
+  });
+
+  it("pasa las image_urls tal cual cuando la fila trae fotos", () => {
+    const urls = [
+      "https://x.supabase.co/storage/v1/object/public/solicitud-images/a.jpg",
+      "https://x.supabase.co/storage/v1/object/public/solicitud-images/b.jpg",
+    ];
+    const payload = buildMakePayload({ ...baseRow, image_urls: urls });
+    expect(payload.image_urls).toEqual(urls);
   });
 });

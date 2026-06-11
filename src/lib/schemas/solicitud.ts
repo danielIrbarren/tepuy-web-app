@@ -65,6 +65,12 @@ export const CreateSolicitudBodySchema = z.object({
     .string()
     .min(10, "La descripción debe tener al menos 10 caracteres")
     .max(1000, "La descripción no puede exceder 1000 caracteres"),
+  // URLs de las fotos ya subidas a Storage. Opcional — el residente puede
+  // enviar sin fotos. Máximo 5; deben ser URLs válidas.
+  image_urls: z
+    .array(z.url("URL de imagen inválida"))
+    .max(5, "Máximo 5 imágenes")
+    .optional(),
 });
 
 export type CreateSolicitudBody = z.infer<typeof CreateSolicitudBodySchema>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Wrench,
   Zap,
@@ -18,6 +18,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { ResidentCard } from "@/components/resident-card";
+import { ImageAttachments } from "@/components/image-attachments";
 import {
   WorkArea,
   WORK_AREA_LABELS,
@@ -65,8 +66,13 @@ export function MaintenanceForm({
   const [workArea,         setWorkArea]         = useState<string>("");
   const [criticality,      setCriticality]      = useState<string>("");
   const [description,      setDescription]      = useState("");
+  const [imageUrls,        setImageUrls]        = useState<string[]>([]);
+  const [imagesUploading,  setImagesUploading]  = useState(false);
   const [isSubmitting,     setIsSubmitting]     = useState(false);
   const [error,            setError]            = useState<string | null>(null);
+
+  const handleUrlsChange       = useCallback((urls: string[]) => setImageUrls(urls), []);
+  const handleUploadingChange  = useCallback((up: boolean) => setImagesUploading(up), []);
 
   const descriptionLength = description.length;
 
@@ -97,6 +103,7 @@ export function MaintenanceForm({
           work_area:      workArea,
           criticality,
           description:    description.trim(),
+          image_urls:     imageUrls,
         }),
       });
 
@@ -337,6 +344,13 @@ export function MaintenanceForm({
           )}
         </div>
 
+        {/* ─── Fotos (opcional) ─── */}
+        <ImageAttachments
+          disabled={isSubmitting}
+          onUrlsChange={handleUrlsChange}
+          onUploadingChange={handleUploadingChange}
+        />
+
       </div>
 
       {/* Error */}
@@ -351,10 +365,17 @@ export function MaintenanceForm({
         </div>
       )}
 
+      {/* Aviso de subida en curso */}
+      {imagesUploading && (
+        <p className="text-[11px] text-tepuy-400 font-semibold text-center">
+          Subiendo fotos… espera un momento para enviar.
+        </p>
+      )}
+
       {/* Submit */}
       <button
         onClick={handleSubmit}
-        disabled={!isValid || isSubmitting}
+        disabled={!isValid || isSubmitting || imagesUploading}
         className="btn-tepuy w-full h-12 rounded-xl text-[15px] font-bold text-white flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed tracking-wide"
       >
         {isSubmitting ? (

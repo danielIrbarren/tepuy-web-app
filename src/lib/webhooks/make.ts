@@ -34,6 +34,9 @@ export interface MakeWebhookPayload {
   work_area: string;
   criticality: "urgente" | "importante";
   description: string;
+  // URLs públicas de las fotos adjuntas (lista vacía si no hay fotos).
+  // Make las recorre con un Iterator para mandar cada una a WhatsApp.
+  image_urls: string[];
   // Metadatos
   created_at: string;
 }
@@ -46,11 +49,60 @@ interface MakeWebhookResponse {
 }
 
 import { log } from "@/lib/logger";
+import { getReferenceNumber } from "@/lib/schemas/solicitud";
 
 export interface MakeWebhookResult {
   status: "sent" | "failed" | "skipped";
   taskUrl: string | null;
   reason?: string;
+}
+
+// ─── Construcción del payload desde una fila de maintenance_requests ─────
+//
+// Fuente única de verdad para armar el payload del webhook. Antes este mapeo
+// estaba duplicado en route.ts (submit) y retry.ts (reintento); ahora ambos
+// llaman a buildMakePayload para no divergir.
+
+export interface MakeRequestRow {
+  id: string;
+  ci_usuario: string;
+  nombre_usuario: string | null;
+  nro_apto: string | null;
+  descripcion_inmueble: string | null;
+  tlf_usuario: string | null;
+  gerencia: string | null;
+  supervisor_nombre: string | null;
+  supervisor_tlf: string | null;
+  work_area: string;
+  criticality: "urgente" | "importante";
+  description: string;
+  image_urls?: string[] | null;
+  created_at: string;
+}
+
+/**
+ * Mapea una fila de maintenance_requests al payload del webhook de Make.
+ * `image_urls` cae a `[]` cuando la columna viene null/undefined, para que
+ * Make siempre reciba una lista (su Iterator corre 0 veces si está vacía).
+ */
+export function buildMakePayload(row: MakeRequestRow): MakeWebhookPayload {
+  return {
+    request_id: row.id,
+    reference_number: getReferenceNumber(row.id),
+    ci_usuario: row.ci_usuario,
+    nombre_usuario: row.nombre_usuario,
+    nro_apto: row.nro_apto,
+    descripcion_inmueble: row.descripcion_inmueble,
+    tlf_usuario: row.tlf_usuario,
+    gerencia: row.gerencia,
+    supervisor_nombre: row.supervisor_nombre,
+    supervisor_tlf: row.supervisor_tlf,
+    work_area: row.work_area,
+    criticality: row.criticality,
+    description: row.description,
+    image_urls: row.image_urls ?? [],
+    created_at: row.created_at,
+  };
 }
 
 // ─── Normalización de teléfono venezolano a E.164 ────────────────────────

@@ -3,11 +3,10 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import { RESIDENT_PUBLIC_FIELDS } from "@/lib/schemas/resident";
 import {
   CreateSolicitudBodySchema,
-  getReferenceNumber,
   type CreateSolicitudResponse,
   type SolicitudErrorResponse,
 } from "@/lib/schemas/solicitud";
-import { triggerMakeWebhook } from "@/lib/webhooks/make";
+import { triggerMakeWebhook, buildMakePayload } from "@/lib/webhooks/make";
 import { checkSolicitudRateLimit, getClientIp } from "@/lib/rate-limit";
 import { log, getCorrelationId } from "@/lib/logger";
 
@@ -66,7 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { resident_id, work_area, criticality, description } = parsed.data;
+    const { resident_id, work_area, criticality, description, image_urls } = parsed.data;
 
     // 2. Re-validate resident exists and is active (security: don't trust client state)
     const { data: resident, error: dbError } = await supabaseAdmin
@@ -129,6 +128,7 @@ export async function POST(request: NextRequest) {
         work_area,
         criticality,
         description,
+        image_urls: image_urls ?? [],
       })
       .select("id")
       .single();
@@ -162,22 +162,24 @@ export async function POST(request: NextRequest) {
     // NO corte la función serverless antes de que el task termine.
     after(async () => {
       try {
-        const webhookResult = await triggerMakeWebhook({
-          request_id: insertedRequest.id,
-          reference_number: getReferenceNumber(insertedRequest.id),
-          ci_usuario: resident.ci_usuario,
-          nombre_usuario: resident.nombre_usuario,
-          nro_apto: resident.nro_apto,
-          descripcion_inmueble: resident.descripcion_inmueble,
-          tlf_usuario: resident.tlf_usuario,
-          gerencia: resident.gerencia,
-          supervisor_nombre: resident.supervisor_nombre,
-          supervisor_tlf: resident.supervisor_tlf,
-          work_area,
-          criticality,
-          description,
-          created_at: new Date().toISOString(),
-        });
+        const webhookResult = await triggerMakeWebhook(
+          buildMakePayload({
+            id: insertedRequest.id,
+            ci_usuario: resident.ci_usuario,
+            nombre_usuario: resident.nombre_usuario,
+            nro_apto: resident.nro_apto,
+            descripcion_inmueble: resident.descripcion_inmueble,
+            tlf_usuario: resident.tlf_usuario,
+            gerencia: resident.gerencia,
+            supervisor_nombre: resident.supervisor_nombre,
+            supervisor_tlf: resident.supervisor_tlf,
+            work_area,
+            criticality,
+            description,
+            image_urls: image_urls ?? [],
+            created_at: new Date().toISOString(),
+          })
+        );
 
         if (webhookResult.status === "sent") {
           await supabaseAdmin

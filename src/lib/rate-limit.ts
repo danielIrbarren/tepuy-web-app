@@ -185,3 +185,44 @@ export async function checkSolicitudRateLimit(
   // Dev fallback — reusar inMemoryLimit con key prefijada
   return inMemoryLimit(`solicitud:${identifier}`);
 }
+
+// ─── Rate limiting para POST /api/solicitudes/upload ───────────────────────
+// Subida de fotos: hasta 5 por solicitud + reintentos por foto. Más holgado
+// que /solicitudes porque son varias requests por una sola solicitud.
+
+const UPLOAD_LIMIT = 30; // 30 subidas por 5 minutos por IP
+
+let _uploadLimiter: Ratelimit | null = null;
+
+function getUploadLimiter(): Ratelimit | null {
+  if (_uploadLimiter) return _uploadLimiter;
+
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+
+  try {
+    _uploadLimiter = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(UPLOAD_LIMIT, "300 s"),
+      analytics: true,
+      prefix: "tepuy:upload",
+    });
+    return _uploadLimiter;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rate limiting para el endpoint de subida de fotos.
+ * 30 subidas por 5 minutos por IP.
+ */
+export async function checkUploadRateLimit(
+  identifier: string
+): Promise<RateLimitResult> {
+  const upstash = getUploadLimiter();
+  if (upstash) return upstash.limit(identifier);
+
+  return inMemoryLimit(`upload:${identifier}`);
+}

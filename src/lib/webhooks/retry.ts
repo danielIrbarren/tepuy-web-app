@@ -14,8 +14,7 @@
  */
 
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { triggerMakeWebhook, type MakeWebhookPayload } from "@/lib/webhooks/make";
-import { getReferenceNumber } from "@/lib/schemas/solicitud";
+import { triggerMakeWebhook, buildMakePayload } from "@/lib/webhooks/make";
 import { log } from "@/lib/logger";
 
 // ─── Backoff según retry_count ────────────────────────────────────────────
@@ -61,7 +60,7 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
     const { data: failedRequests, error: fetchError } = await supabaseAdmin
       .from("maintenance_requests")
       .select(
-        "id, request_id:id, ci_usuario, nombre_usuario, nro_apto, descripcion_inmueble, tlf_usuario, gerencia, supervisor_nombre, supervisor_tlf, work_area, criticality, description, created_at, retry_count, updated_at"
+        "id, request_id:id, ci_usuario, nombre_usuario, nro_apto, descripcion_inmueble, tlf_usuario, gerencia, supervisor_nombre, supervisor_tlf, work_area, criticality, description, image_urls, created_at, retry_count, updated_at"
       )
       .eq("webhook_status", "failed")
       .lt("retry_count", MAX_RETRIES)
@@ -100,9 +99,8 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
       // Incrementar retry_count antes de intentar (para tracking)
       const newRetryCount = retryCount + 1;
 
-      const payload: MakeWebhookPayload = {
-        request_id: req.id as string,
-        reference_number: getReferenceNumber(req.id as string),
+      const payload = buildMakePayload({
+        id: req.id as string,
         ci_usuario: req.ci_usuario as string,
         nombre_usuario: req.nombre_usuario as string | null,
         nro_apto: req.nro_apto as string | null,
@@ -114,8 +112,9 @@ export async function retryFailedWebhooks(): Promise<RetryResult> {
         work_area: req.work_area as string,
         criticality: req.criticality as "urgente" | "importante",
         description: req.description as string,
+        image_urls: req.image_urls as string[] | null,
         created_at: req.created_at as string,
-      };
+      });
 
       try {
         const webhookResult = await triggerMakeWebhook(payload);
