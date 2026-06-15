@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { logoutAdmin } from "@/lib/adminClient";
 
-type AdminSection = "residents" | "solicitudes" | "qr";
+type AdminSection = "dashboard" | "residents" | "solicitudes" | "qr";
 
 type AdminPageHeaderProps = {
   title: string;
@@ -12,6 +12,17 @@ type AdminPageHeaderProps = {
 };
 
 function SectionIcon({ section }: { section: AdminSection }) {
+  if (section === "dashboard") {
+    return (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="7" height="9" x="3" y="3" rx="1" />
+        <rect width="7" height="5" x="14" y="3" rx="1" />
+        <rect width="7" height="9" x="14" y="12" rx="1" />
+        <rect width="7" height="5" x="3" y="16" rx="1" />
+      </svg>
+    );
+  }
+
   if (section === "solicitudes") {
     return (
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -114,6 +125,14 @@ export function AdminPageHeader({
         </div>
 
         <div className="flex items-center gap-1.5">
+          <NavButton active={section === "dashboard"} label="Resumen" onClick={() => router.push("/admin/dashboard")}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="7" height="9" x="3" y="3" rx="1" />
+              <rect width="7" height="5" x="14" y="3" rx="1" />
+              <rect width="7" height="9" x="14" y="12" rx="1" />
+              <rect width="7" height="5" x="3" y="16" rx="1" />
+            </svg>
+          </NavButton>
           <NavButton active={section === "residents"} label="Residentes" onClick={() => router.push("/admin")}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
