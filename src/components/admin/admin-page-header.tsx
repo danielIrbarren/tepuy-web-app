@@ -83,7 +83,7 @@ function NavButton({ active, label, onClick, children }: NavButtonProps) {
       aria-current={active ? "page" : undefined}
     >
       {children}
-      <span className="hidden sm:inline">{label}</span>
+      <span className={active ? "inline" : "hidden sm:inline"}>{label}</span>
     </button>
   );
 }
