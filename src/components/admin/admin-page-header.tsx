@@ -77,7 +77,7 @@ function NavButton({ active, label, onClick, children }: NavButtonProps) {
       title={label}
       className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-1.5 sm:px-3 text-[12px] font-semibold transition-colors cursor-pointer ${
         active
-          ? "border-tepuy-300 bg-tepuy-50 text-tepuy-700"
+          ? "border-tepuy-700 bg-tepuy-700 text-white shadow-sm"
           : "border-tepuy-200 bg-white text-tepuy-600 hover:bg-tepuy-50 hover:border-tepuy-300"
       }`}
       aria-current={active ? "page" : undefined}
