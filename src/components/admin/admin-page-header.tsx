@@ -75,7 +75,7 @@ function NavButton({ active, label, onClick, children }: NavButtonProps) {
     <button
       onClick={onClick}
       title={label}
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-2 py-1.5 sm:px-3 text-[12px] font-semibold transition-colors cursor-pointer ${
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg border min-h-[44px] sm:min-h-0 px-2.5 py-1.5 sm:px-3 text-[12px] font-semibold transition-colors cursor-pointer ${
         active
           ? "border-tepuy-700 bg-tepuy-700 text-white shadow-sm"
           : "border-tepuy-200 bg-white text-tepuy-600 hover:bg-tepuy-50 hover:border-tepuy-300"
@@ -168,7 +168,7 @@ export function AdminPageHeader({
           <button
             onClick={() => logoutAdmin(() => router.push("/admin/login"))}
             title="Salir"
-            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 sm:px-3 text-[12px] font-semibold text-tepuy-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 border border-transparent transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg min-h-[44px] sm:min-h-0 px-2.5 py-1.5 sm:px-3 text-[12px] font-semibold text-tepuy-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 border border-transparent transition-colors cursor-pointer"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
